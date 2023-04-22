@@ -14,7 +14,7 @@ are in PATH. I cannot give a download link for any of this.
 
 Supported platforms:
 | Platform | Format | Implemented | 
-| --- | :---: | --- |
+| :--- | :---: | ---: |
 | **PC** | PCM | ✅ |
 | **GGP (Google Stadia)** | PCM | ✅ |
 | **X360** | XMA2 | ✅ |
