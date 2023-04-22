@@ -14,18 +14,18 @@ are in PATH. I cannot give a download link for any of this.
 
 Supported platforms:
 | Platform | Format | Implemented | 
-| --- | --- | --- |
-| **PC** | PCM | | ✅ |
-| **GGP (Google Stadia)** | PCM | | ✅ |
-| **X360** | XMA2 | | ✅ |
-| **XOne** | XMA2 | | ✅ (untested) |
-| **XBSX (Series X)** | ❓ | | ❓ |
-| **PS3** | MP3 | | ✅ |
-| **PSVita** | AT9 | | ❌ |
-| **PS4** | PCM | | ✅ |
-| **Prospero (PS5)** | ❓ | | ❓ |
-| **PC** | PCM | | ✅ |
-| **Wii** | DSP | | ❌ |
-| **Cafe (WiiU)** | DSP | | ❌ |
-| **Citra (3DS)** | CWAV | | ❌ |
-| **NX (Nintendo Switch)** | Opus (Nintendo) | | ✅ |
+| --- | :---: | --- |
+| **PC** | PCM | ✅ |
+| **GGP (Google Stadia)** | PCM | ✅ |
+| **X360** | XMA2 | ✅ |
+| **XOne** | XMA2 | ✅ (untested) |
+| **XBSX (Series X)** | ❓ | ❓ |
+| **PS3** | MP3 | ✅ |
+| **PSVita** | AT9 | ❌ |
+| **PS4** | PCM | ✅ |
+| **Prospero (PS5)** | ❓ | ❓ |
+| **PC** | PCM | ✅ |
+| **Wii** | DSP | ❌ |
+| **Cafe (WiiU)** | DSP | ❌ |
+| **Citra (3DS)** | CWAV | ❌ |
+| **NX (Nintendo Switch)** | Opus (Nintendo) | ✅ |
