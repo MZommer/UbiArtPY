@@ -54,13 +54,15 @@ class RAKI:
     def getPlatform(platform: str) -> bytes:
         return {
             "PC": b"Win ",
+            "X360": b"X360",
+            "PS3": b"PS3 ",
+            "ORBIS": b"Orbi",
+            "WII": b"Wii ",
             "WIIU": b"Cafe",
             "CAFE": b"Cafe",
+            "DURANGO": b"Dura",
+            "XONE": b"Dura",
             "NX": b"Nx  ",
-            "WII": b"Wii ",
-            "ORBIS": b"Orbi",
-            "PS3": b"PS3 ",
-            "X360": b"X360"
         }[platform]
 
     @staticmethod
@@ -368,6 +370,7 @@ class RAKI:
     def Parse(path):
         """
         TODO: Add parsing for the format chunks
+              Add endianess for each platform?
         """
         self = RAKI()
         with open(path, "rb") as ckd:
