@@ -4,12 +4,14 @@
 
 
 ## Audio Handler
-Is important that FFMPEG,
-both OpusEncoder and OpusDecoder (you can find this on the NX (Nintendo Switch) SDK),
-DSPADPCM (you can find this in Wii SDK),
-xma2encode (you can find this in x360 SDK or on the Durango (XOne) sdk, both work)
-and [vgmstream](https://github.com/vgmstream/vgmstream/)
-are in PATH. I cannot give a download link for any of this.
+Is important that [`FFMPEG`](https://ffmpeg.org),
+both `OpusEncoder` and `OpusDecoder` (you can find this on the NX (Nintendo Switch) SDK),
+`DSPADPCM` (you can find this in Wii SDK),
+`xma2encode` (you can find this in x360 SDK or on the Durango (XOne) SDK, both work)
+and [`vgmstream`](https://github.com/vgmstream/vgmstream/)
+are in *`PATH`*.
+
+I cannot provide a download link for any of this.
 
 
 Supported platforms:
