@@ -18,11 +18,11 @@ Supported platforms:
 | **PC** | PCM | ✅ |
 | **GGP (Google Stadia)** | PCM | ✅ |
 | **X360** | XMA2 | ✅ |
-| **XOne** | XMA2 | ✅ (untested) |
+| **Durango (XOne)** | XMA2 | ✅ (untested) |
 | **XBSX (Series X)** | ❓ | ❓ |
 | **PS3** | MP3 | ✅ |
 | **PSVita** | AT9 | ❌ |
-| **PS4** | PCM | ✅ |
+| **Orbis (PS4)** | PCM | ✅ |
 | **Prospero (PS5)** | ❓ | ❓ |
 | **PC** | PCM | ✅ |
 | **Wii** | DSP | ❌ |
