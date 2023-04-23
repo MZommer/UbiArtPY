@@ -15,6 +15,7 @@ def useTemp(func):
         if not existsTemp:
             os.mkdir("/temp/")
         func(*args, **kwargs)
-        shutil.rmtree("/temp/")
+        if not existsTemp:
+            shutil.rmtree("/temp/")
 
     return wrapper
