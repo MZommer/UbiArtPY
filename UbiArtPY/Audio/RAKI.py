@@ -1,7 +1,7 @@
 import os
 from datetime import timedelta
 from math import ceil
-from ..__utils__ import system, useTemp
+from ..__utils__ import system, useTemp, InvalidFileError
 from .DSP import *
 from .RIFF import *
 
@@ -371,7 +371,9 @@ class RAKI:
         """
         self = RAKI()
         with open(path, "rb") as ckd:
-            ckd.seek(4)  # TODO: check the signature?
+            Signature = ckd.read(4)
+            if Signature == b"RAKI":
+                raise InvalidFileError("Invalid RAKI file!")
             self.Version = struct.unpack(">I", ckd.read(4))[0]
             self.Platform = ckd.read(4)
             self.Format = ckd.read(4)

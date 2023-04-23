@@ -1,11 +1,12 @@
 import struct
+from ..__utils__ import InvalidFileError
 
 
 class RIFF:
     def __init__(self, buffer):
         self.Signature = buffer.read(4)  # Normally RIFF (Resource Interchange File Format)
         if self.Signature != b'RIFF':
-            raise TypeError("File is not RIFF!")
+            raise InvalidFileError("Invalid file! File is not a RIFF!")
         self.FileLength = struct.unpack("I", buffer.read(4))[0]
         self.FileType = buffer.read(4)  # Normally Wave
         self.FormatChunkMarker = buffer.read(4)  # Normally fmt

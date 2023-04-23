@@ -19,3 +19,8 @@ def useTemp(func):
             shutil.rmtree("/temp/")
 
     return wrapper
+
+class InvalidFileError(Exception):
+     def __init__(self, message="Invalid file!"):
+        self.message = message
+        super().__init__(self.message)
