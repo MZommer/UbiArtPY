@@ -14,7 +14,7 @@ are in *`PATH`*.
 I cannot provide a download link for any of this.
 
 
-Supported platforms:
+### Supported platforms:
 | Platform | Format | Implemented | 
 | :--- | :---: | ---: |
 | **PC** | PCM | ✅ |
@@ -31,3 +31,41 @@ Supported platforms:
 | **Cafe (WiiU)** | DSP | ❌ |
 | **Citra (3DS)** | CWAV | ❌ |
 | **NX (Nintendo Switch)** | Opus (Nintendo) | ✅ |
+### Usage
+RAKI is the format of the `cooked` audio files.
+This module provides the `RAKI` class.
+
+### Methods
+
+---
+`RAKI.Cook(file: path, output: path, platform: str, isAMB: bool=False, Format: str=None)` Cooks the RAKI object
+
+`RAKI.UnCook(file: path, output: path)` UnCooks a RAKI file
+
+`RAKI.UnCookAndCook(file: path, output: path, platform: str)` Reformat a RAKI file into another platform/format
+
+`RAKI.SyncJDUAudio(file: path, output: path, startBeat: int, markers: list[int], amboutput: path=None)`
+Syncronizes a JDU audio into a local one
+
+
+
+#### Example
+The following is a simple example on how to cook an audio.
+```py
+from UbiArtPY import RAKI
+audio = RAKI()
+audio.Cook("stargate.wav", "stargate.wav.ckd", "PC")
+```
+
+The following is a simple example on how to uncook an audio.
+```py
+from UbiArtPY import RAKI
+RAKI.UnCook("stargate.wav.ckd", "stargate.wav")
+```
+
+The following is a simple example on how to UnCook and Cook an audio.
+```py
+from UbiArtPY import RAKI
+RAKI.UnCookAndCook("stargate.wav.ckd", "stargate_wii.wav.ckd", "WII")
+```
+
