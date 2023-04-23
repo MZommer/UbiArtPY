@@ -25,7 +25,7 @@ class RAKI:
                  HeaderLenght=32,
                  DataOffset=32,
                  NumberOfChunks=0,
-                 unk=00):
+                 unk=0):
         self.Version = Version
         self.Platform = Platform
         self.Format = Format
