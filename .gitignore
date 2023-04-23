@@ -1,3 +1,20 @@
+# UAF
+*.ckd
+
+# assets
+*.wav
+*.mp3
+*.ogg
+*.png
+*.jpg
+*.jpeg
+*.dds
+*.tga
+
+# left overs of sdk tools
+left.txt
+right.txt
+
 # Pycharm
 .idea/
 
