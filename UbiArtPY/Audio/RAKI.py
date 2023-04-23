@@ -334,6 +334,7 @@ class RAKI:
 
     @useTemp
     def Cook(self, file, output, platform, isAMB=False, Format=None):
+        platform = platform.upper()
         self.isAMB = isAMB
         file = os.path.abspath(file)
         output = os.path.abspath(output)
