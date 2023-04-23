@@ -121,13 +121,12 @@ class RAKI:
         buffer.write(struct.pack(byteOrder + "I", self.unk))
 
     def __CookNX(self, raki):
-        # TODO: Port to SDK tool
         self.HeaderLength = 0x58
         self.DataOffset = 0x58
         self.NumberOfChunks = 3
         self.__CookRAKIHeader(raki)
         wave = RIFF(open("/temp/temp.wav", "rb"))
-        system('VGAudioCli -c --bitrate 192000 -i \\temp\\temp.wav \\temp\\temp.lopus')
+        system('OpusEncoder --bitrate 192000  -o \\temp\\temp.lopus \\temp\\temp.wav')
         with open("\\temp\\temp.lopus", "rb") as opus:
             data = opus.read()
             dataSize = opus.tell()
