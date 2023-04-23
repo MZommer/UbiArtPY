@@ -55,6 +55,7 @@ class RAKI:
         return {
             "PC": b"Win ",
             "WIIU": b"Cafe",
+            "CAFE": b"Cafe",
             "NX": b"Nx  ",
             "WII": b"Wii ",
             "ORBIS": b"Orbi",
@@ -67,6 +68,7 @@ class RAKI:
         return {
             "PC": 10,
             "WIIU": 8,
+            "CAFE": 8,
             "NX": 11,
             "WII": 8,
             "ORBIS": 9,
@@ -80,6 +82,7 @@ class RAKI:
             return {
                 "PC": b"pcm ",
                 "WIIU": b"adpc",
+                "CAFE": b"adpc",
                 "NX": b"pcm ",
                 "WII": b"adpc",
                 "ORBIS": b"pcm ",
@@ -90,6 +93,7 @@ class RAKI:
             return {
                 "PC": b"pcm ",
                 "WIIU": b"adpc",
+                "CAFE": b"adpc",
                 "NX": b"Nx  ",
                 "WII": b"adpc",
                 "ORBIS": b"pcm ",
