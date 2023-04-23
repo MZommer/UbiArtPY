@@ -46,10 +46,9 @@ class RIFF:
             self.SeekChunkMarker = buffer.read(4)
             self.seekTableLength = struct.unpack("I", buffer.read(4))[0]
             self.SeekTable = buffer.read(self.seekTableLength)
-        elif formatDataLength != 0x10:
-            # TODO: Check this?
-            buffer.read(2)  # 00?
-            buffer.read(4)  # LIST
+        elif self.FormatTag == 1:
+            buffer.read(4)  # Normally LIST
+            # just skip this data we don't use (INFOISFT, Lavf58.76.100)?
             buffer.read(struct.unpack("I", buffer.read(4))[0])
 
         self.DataChunkMarker = buffer.read(4)  # Normally data
