@@ -1,0 +1,2 @@
+class URL(str):
+    pass
