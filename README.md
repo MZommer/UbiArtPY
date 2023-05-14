@@ -1,7 +1,11 @@
 # UbiArtPY
  Python module for working with the Ubi Art Framework
 
+![Tools Banner](banner.png)
 
+- Audio
+  - AudioCooker - Converts audio to Cooked format for each platform
+  - AudioUncookAndCook - Reformats a cooked audio into another format
 
 ## Audio Handler
 Is important that [`FFMPEG`](https://ffmpeg.org),
