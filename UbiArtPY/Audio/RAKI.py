@@ -11,9 +11,9 @@ class RAKI:
     Platform: str
     Format: bytes
     HeaderLenght: int
-    DataOffset: int
-    NumberOfChunks: int
-    unk: int
+    dataOffset: int
+    nbItems: int
+    _optionalBinFlags: int
 
     isAMB: bool
     Endianess: str
@@ -29,10 +29,10 @@ class RAKI:
         self.Version = Version
         self.Platform = Platform
         self.Format = Format
-        self.HeaderLength = HeaderLenght
-        self.DataOffset = DataOffset
-        self.NumberOfChunks = NumberOfChunks
-        self.unk = unk
+        self.nonDataSize = HeaderLenght
+        self.dataOffset = DataOffset
+        self.nbItems = NumberOfChunks
+        self._optionalBinFlags = unk
 
     @staticmethod
     def SyncJDUAudio(file, output, startBeat, markers, amboutput=None) -> bool:
@@ -121,15 +121,15 @@ class RAKI:
         buffer.write(struct.pack(byteOrder + "I", self.Version))
         buffer.write(self.Platform)
         buffer.write(self.Format)
-        buffer.write(struct.pack(byteOrder + "I", self.HeaderLength))
-        buffer.write(struct.pack(byteOrder + "I", self.DataOffset))
-        buffer.write(struct.pack(byteOrder + "I", self.NumberOfChunks))
-        buffer.write(struct.pack(byteOrder + "I", self.unk))
+        buffer.write(struct.pack(byteOrder + "I", self.nonDataSize))
+        buffer.write(struct.pack(byteOrder + "I", self.dataOffset))
+        buffer.write(struct.pack(byteOrder + "I", self.nbItems))
+        buffer.write(struct.pack(byteOrder + "I", self._optionalBinFlags))
 
     def __CookNX(self, raki):
-        self.HeaderLength = 0x58
-        self.DataOffset = 0x58
-        self.NumberOfChunks = 3
+        self.nonDataSize = 0x58
+        self.dataOffset = 0x58
+        self.nbItems = 3
         self.__CookRAKIHeader(raki)
         wave = RIFF(open("/temp/temp.wav", "rb"))
         system('OpusEncoder --bitrate 192000  -o \\temp\\temp.lopus \\temp\\temp.wav')
@@ -164,9 +164,9 @@ class RAKI:
         os.remove("/temp/temp.lopus")
 
     def __CookPCM(self, raki):
-        self.HeaderLength = 72
-        self.DataOffset = 72
-        self.NumberOfChunks = 2
+        self.nonDataSize = 72
+        self.dataOffset = 72
+        self.nbItems = 2
         # Hard codded
         self.__CookRAKIHeader(raki)
         wave = RIFF(open("/temp/temp.wav", "rb"))
@@ -189,9 +189,9 @@ class RAKI:
 
     def __CookMP3(self, raki):
         # TODO: update so it takes the data from the mp3, not the wave
-        self.HeaderLength = 0x48
-        self.DataOffset = 0x80
-        self.NumberOfChunks = 2
+        self.nonDataSize = 0x48
+        self.dataOffset = 0x80
+        self.nbItems = 2
         # Hard codded
         self.__CookRAKIHeader(raki)
         wave = RIFF(open("/temp/temp.wav", "rb"))
@@ -204,7 +204,7 @@ class RAKI:
         raki.write(struct.pack(">I", 16))  # Chunk Length
 
         raki.write(b"Msf ")
-        raki.write(struct.pack(">I", self.DataOffset))  # Data Offset
+        raki.write(struct.pack(">I", self.dataOffset))  # Data Offset
         raki.write(struct.pack(">I", len(data)))  # Data Length
 
         raki.write(struct.pack(">H", 0x55))  # Format flag hardcoded
@@ -227,9 +227,9 @@ class RAKI:
         dataOffset = 120 + xma2.seekTableLength
         dataOffsetSpaced = ceil(dataOffset / 2048) * 2048
         spacing = dataOffsetSpaced - dataOffset
-        self.HeaderLength = dataOffset
-        self.DataOffset = dataOffsetSpaced
-        self.NumberOfChunks = 3
+        self.nonDataSize = dataOffset
+        self.dataOffset = dataOffsetSpaced
+        self.nbItems = 3
         # Hard codded
         self.__CookRAKIHeader(raki)
 
@@ -283,13 +283,13 @@ class RAKI:
         # wav_right = RIFF(open("\\temp\\right.wav", "rb"))
 
         if self.isAMB:
-            self.HeaderLength = 0x12E
-            self.NumberOfChunks = 5
+            self.nonDataSize = 0x12E
+            self.nbItems = 5
         else:
-            self.HeaderLength = 0x122
-            self.NumberOfChunks = 4
+            self.nonDataSize = 0x122
+            self.nbItems = 4
 
-        self.DataOffset = 0x140
+        self.dataOffset = 0x140
         # Hard codded
         self.__CookRAKIHeader(raki)
         # Chunks
@@ -345,7 +345,7 @@ class RAKI:
         output = os.path.abspath(output)
         self.Version = self.getVersion(platform)
         self.Platform = self.getPlatform(platform)
-        self.unk = self.unk or (0 if self.isAMB else 3)
+        self._optionalBinFlags = self._optionalBinFlags or (0 if self.isAMB else 3)
         self.Format = Format or self.getFormat(platform, self.isAMB)
         self.Endianess = self.getEndianess(self.Format)
 
@@ -380,10 +380,10 @@ class RAKI:
             self.Version = struct.unpack(">I", ckd.read(4))[0]
             self.Platform = ckd.read(4)
             self.Format = ckd.read(4)
-            self.HeaderLength = struct.unpack(">I", ckd.read(4))[0]
-            self.DataOffset = struct.unpack(">I", ckd.read(4))[0]
-            self.NumberOfChunks = struct.unpack(">I", ckd.read(4))[0]
-            self.unk = struct.unpack(">I", ckd.read(4))[0]
+            self.nonDataSize = struct.unpack(">I", ckd.read(4))[0]
+            self.dataOffset = struct.unpack(">I", ckd.read(4))[0]
+            self.nbItems = struct.unpack(">I", ckd.read(4))[0]
+            self._optionalBinFlags = struct.unpack(">I", ckd.read(4))[0]
         return self
 
     @staticmethod
@@ -396,6 +396,6 @@ class RAKI:
         RAKI.UnCook(file, "/temp/uncooktemp.wav")
         inRAKI = RAKI.Parse(file)
         outRAKI = RAKI()
-        outRAKI.unk = inRAKI.unk
+        outRAKI._optionalBinFlags = inRAKI._optionalBinFlags
         outRAKI.Cook("/temp/uncooktemp.wav", output, platform)
         os.remove("/temp/uncooktemp.wav")
