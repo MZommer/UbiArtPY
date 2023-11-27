@@ -74,7 +74,7 @@ class StringID:
     # Constructors and Converters
     @singledispatchmethod
     def __init__(self, value):
-        pass # TODO: CHECK?
+        pass
     @__init__.register
     def _(self, string: str):
         if string:
@@ -96,5 +96,5 @@ class StringID:
     def isValid(self) -> bool:
         return self._id != self.InvalidId
     
-    def getHashCode(self) -> int:
+    def GetHashCode(self) -> int:
         return self._id
