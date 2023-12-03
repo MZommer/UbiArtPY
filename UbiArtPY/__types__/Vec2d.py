@@ -7,6 +7,10 @@ def isNaN(num: float32):
 class Vec2d:
     X: float32 = 0.
     Y: float32 = 0.
+    
+    def __init__(self, _x: float32, _y: float32) -> None:
+        self.X = float32(_x)
+        self.Y = float32(_y)
 
     def __str__(self):
         return f"x: {self.X}, y: {self.Y}"
