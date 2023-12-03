@@ -1,7 +1,7 @@
 class Volume:
     db: float
 
-    def __init__(self, db):
+    def __init__(self, db: float):
         self.db = float(db)
     
     def __str__(self):
