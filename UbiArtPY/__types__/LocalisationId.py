@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class LocalisationId:
-    LocId: int
+    LocId: int = 0xffffffff
     
     def __str__(self) -> str:
         return str(self.LocId)
