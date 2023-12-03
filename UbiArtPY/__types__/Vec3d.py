@@ -9,6 +9,11 @@ class Vec3d:
     Y: float32 = 0.
     Z: float32 = 0.
 
+    def __init__(self, _x: float32, _y: float32, _z: float32) -> None:
+        self.X = float32(_x)
+        self.Y = float32(_y)
+        self.Z = float32(_z)
+
     def __str__(self):
         return f"x: {self.X}, y: {self.Y}, z: {self.Z}"
 
