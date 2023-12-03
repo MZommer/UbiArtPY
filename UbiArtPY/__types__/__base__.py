@@ -10,4 +10,4 @@ from Binary Helper
     float64, double,
     and dtype (datatype)
 """
-
+BaseTypes = int8, uint8, int16, uint16, uint32, int32, float32, float64, bool, str, list, dict, tuple
