@@ -27,13 +27,11 @@ I cannot provide a download link for any of this.
 | **Durango (XOne)** | XMA2 | ✅ (untested) |
 | **XBSX (Series X)** | ❓ | ❓ |
 | **PS3** | MP3 | ✅ |
-| **PSVita** | AT9 | ❌ |
 | **Orbis (PS4)** | PCM | ✅ |
 | **Prospero (PS5)** | ❓ | ❓ |
 | **PC** | PCM | ✅ |
 | **Wii** | DSP | ❌ |
 | **Cafe (WiiU)** | DSP | ❌ |
-| **Citra (3DS)** | CWAV | ❌ |
 | **NX (Nintendo Switch)** | Opus (Nintendo) | ✅ |
 ### Usage
 RAKI is the format of the `cooked` audio files.
