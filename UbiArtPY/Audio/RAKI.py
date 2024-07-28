@@ -131,13 +131,13 @@ class RAKI:
         self.dataOffset = 0x58
         self.nbItems = 3
         self.__CookRAKIHeader(raki)
-        wave = RIFF(open("/temp/temp.wav", "rb"))
+        wave = RIFF.from_file("/temp/temp.wav")
         system('OpusEncoder --bitrate 192000  -o \\temp\\temp.lopus \\temp\\temp.wav')
         with open("\\temp\\temp.lopus", "rb") as opus:
             data = opus.read()
             dataSize = opus.tell()
 
-        raki.write(wave.FormatChunkMarker)
+        raki.write(b'fmt ')
         raki.write(struct.pack("I", 68))  # Chunk Offset
         raki.write(struct.pack("I", 16))  # Chunk Length
 
@@ -169,10 +169,10 @@ class RAKI:
         self.nbItems = 2
         # Hard codded
         self.__CookRAKIHeader(raki)
-        wave = RIFF(open("/temp/temp.wav", "rb"))
-        raki.write(wave.FormatChunkMarker)
+        wave = RIFF.from_file("/temp/temp.wav")
+        raki.write(b'fmt ')
         raki.write(struct.pack("I", 56))  # Chunk Offset
-        raki.write(struct.pack("I", 12))  # Chunk Length
+        raki.write(struct.pack("I", 16))  # Chunk Length
 
         raki.write(wave.DataChunkMarker)
         raki.write(struct.pack("I", 72))  # Chunk Offset
@@ -194,7 +194,7 @@ class RAKI:
         self.nbItems = 2
         # Hard codded
         self.__CookRAKIHeader(raki)
-        wave = RIFF(open("/temp/temp.wav", "rb"))
+        wave = RIFF.from_file("/temp/temp.wav")
         system('ffmpeg -i \\temp\\temp.wav -write_xing 0 -id3v2_version 0 -b:a 192k -ac 2 -ar 48000 \\temp\\temp.mp3')
         with open("\\temp\\temp.mp3", "rb") as mp3:
             data = mp3.read()
@@ -222,7 +222,7 @@ class RAKI:
 
     def __CookXMA2(self, raki):
         system(r'xma2encode \temp\temp.wav /BlockSize 4 /Quality 92 /TargetFile \temp\temp.xma')
-        xma2 = RIFF(open("/temp/temp.xma", "rb"))
+        xma2 = RIFF.from_file("/temp/temp.xma")
 
         dataOffset = 120 + xma2.seekTableLength
         dataOffsetSpaced = ceil(dataOffset / 2048) * 2048
@@ -233,7 +233,7 @@ class RAKI:
         # Hard codded
         self.__CookRAKIHeader(raki)
 
-        raki.write(xma2.FormatChunkMarker)
+        raki.write(b'fmt ')
         raki.write(struct.pack(">I", 68))  # Chunk Offset
         raki.write(struct.pack(">I", 52))  # Chunk Length
 
@@ -279,7 +279,7 @@ class RAKI:
         system('DSPADPCM -E \\temp\\right.wav \\temp\\right.dsp')
         dsp_left = DSP(open("\\temp\\left.dsp", "rb"))
         dsp_right = DSP(open("\\temp\\right.dsp", "rb"))
-        wav_left = RIFF(open("\\temp\\left.wav", "rb"))
+        wav_left = RIFF.from_file("\\temp\\left.wav")
         # wav_right = RIFF(open("\\temp\\right.wav", "rb"))
 
         if self.isAMB:
