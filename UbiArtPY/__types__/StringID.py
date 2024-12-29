@@ -1,45 +1,47 @@
+from .__base__ import uint32
 from functools import singledispatchmethod
+from ..Core import ArchiveMemory
 
 STRIDE = 1
 
-def UInt32(value: int) -> int:
+def uint32_cast(value: int) -> uint32:
     '''Cast python int to uint32'''
-    return value & 0xFFFFFFFF
+    return uint32(value & 0xFFFFFFFF)
 
-def ToUp(char: int) -> int:
+def ToUp(char: uint32) -> uint32:
     if char >= 0x61 and char <= 0x7a:
         char -= 0x20
     return char
 
-def mix(a: int, b: int, c: int) -> list[int, int, int]:
-    a = UInt32((a - b - c) ^ (c >> 13))
-    b = UInt32((b - c - a) ^ (a << 8))
-    c = UInt32((c - a - b) ^ (b >> 13))
-    a = UInt32((a - b - c) ^ (c >> 12))
-    b = UInt32((b - c - a) ^ (a << 16))
-    c = UInt32((c - a - b) ^ (b >> 5))
-    a = UInt32((a - b - c) ^ (c >> 3))
-    b = UInt32((b - c - a) ^ (a << 10))
-    c = UInt32((c - a - b) ^ (b >> 15))
+def mix(a: uint32, b: uint32, c: uint32) -> list[uint32, uint32, uint32]:
+    a = uint32_cast((a - b - c) ^ (c >> 13))
+    b = uint32_cast((b - c - a) ^ (a << 8))
+    c = uint32_cast((c - a - b) ^ (b >> 13))
+    a = uint32_cast((a - b - c) ^ (c >> 12))
+    b = uint32_cast((b - c - a) ^ (a << 16))
+    c = uint32_cast((c - a - b) ^ (b >> 5))
+    a = uint32_cast((a - b - c) ^ (c >> 3))
+    b = uint32_cast((b - c - a) ^ (a << 10))
+    c = uint32_cast((c - a - b) ^ (b >> 15))
     # value should be referenced, but this is not possible in python
     return a, b, c
 
-def StrToCRC(_stride: int, _str: str, _len: int) -> int:
+def StrToCRC(_stride: uint32, _str: str, _len: uint32) -> uint32:
     if isinstance(_str, str):
         _str = _str.encode("utf-8")
     
     # Set up the internal state #
-    Len: int = _len
-    len: int = Len
-    a: int = 0x9e3779b9 # the golden ratio; an arbitrary value
-    b: int = a
-    c: int = 0
+    Len: uint32 = _len
+    len: uint32 = Len
+    a: uint32 = 0x9e3779b9 # the golden ratio; an arbitrary value
+    b: uint32 = a
+    c: uint32 = 0
     
     #  handle most of the key
     while len >= 12:
-        a += UInt32(ToUp(_str[0 * _stride]) + (ToUp(_str[1 * _stride]) << 8) + (ToUp(_str[2 * _stride]) << 16) + (ToUp(_str[3 * _stride]) << 24))
-        b += UInt32(ToUp(_str[4 * _stride]) + (ToUp(_str[5 * _stride]) << 8) + (ToUp(_str[6 * _stride]) << 16) + (ToUp(_str[7 * _stride]) << 24))
-        c += UInt32(ToUp(_str[8 * _stride]) + (ToUp(_str[9 * _stride]) << 8) + (ToUp(_str[10 * _stride]) << 16) + (ToUp(_str[11 * _stride]) << 24))
+        a += uint32_cast(ToUp(_str[0 * _stride]) + (ToUp(_str[1 * _stride]) << 8) + (ToUp(_str[2 * _stride]) << 16) + (ToUp(_str[3 * _stride]) << 24))
+        b += uint32_cast(ToUp(_str[4 * _stride]) + (ToUp(_str[5 * _stride]) << 8) + (ToUp(_str[6 * _stride]) << 16) + (ToUp(_str[7 * _stride]) << 24))
+        c += uint32_cast(ToUp(_str[8 * _stride]) + (ToUp(_str[9 * _stride]) << 8) + (ToUp(_str[10 * _stride]) << 16) + (ToUp(_str[11 * _stride]) << 24))
         a, b, c = mix(a, b, c)
         
         _str = _str[12 * _stride:] # substr
@@ -66,9 +68,9 @@ def StrToCRC(_stride: int, _str: str, _len: int) -> int:
     return c
 
 class StringID:
-    InvalidId = 0xFFFFFFFF
-    FullStringTag = 0xEEEEEEEE
-    _id = InvalidId
+    InvalidId: uint32 = 0xFFFFFFFF
+    FullStringTag: uint32 = 0xEEEEEEEE
+    _id: uint32 = InvalidId
     _string: str = ""
 
     # Constructors and Converters
@@ -83,11 +85,11 @@ class StringID:
         else:
             self._id = self.InvalidId
     @__init__.register
-    def _(self, value: int):
+    def _(self, value: uint32):
         self._id = value
 
-    def __int__(self) -> int:
-        return int(self._id)
+    def __int__(self) -> uint32:
+        return uint32(self._id)
     def __str__(self):
         if self._string:
             return self._string
@@ -96,5 +98,8 @@ class StringID:
     def isValid(self) -> bool:
         return self._id != self.InvalidId
     
-    def GetHashCode(self) -> int:
+    def GetHashCode(self) -> uint32:
         return self._id
+    
+    def serialize(self, _archive: ArchiveMemory):
+        self._id = _archive.serialize(self._id)
