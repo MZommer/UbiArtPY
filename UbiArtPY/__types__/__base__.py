@@ -9,5 +9,8 @@ from Binary Helper
     float32, _float, single,
     float64, double,
     and dtype (datatype)
+    
+    # helper functions
+    get_sizeof, get_type_format 
 """
 BaseTypes = int8, uint8, int16, uint16, uint32, int32, float32, float64, bool, str, list, dict, tuple
