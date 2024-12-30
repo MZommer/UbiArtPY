@@ -1,26 +1,31 @@
-from enum import Enum
+from .__base__ import uint32, String8
+from enum import IntEnum
 
-class PlatformId(Enum):
-    PC = 1
-    X360 = 2
-    PS3 = 3
-    ORBIS = 4
-    CTR = 5
-    WII = 6
-    EMUWII = 7
-    VITA = 8
-    WIIU = 9
-    IPAD = 10
-    DURANGO = 11
-    NX = 12
-    GGP = 13
-    SCARLETT = 14
-    PROSPERO = 15
-    POSENET = 16
-    BLAZEPOSE = 17
-    UNDEFINED = 18
+class PlatformId(IntEnum):
+    PC = uint32(0)
+    X360 = uint32(1)
+    PS3 = uint32(2)
+    ORBIS = uint32(3)
+    CTR = uint32(4)    # Unsupported / unused (Nintendo 3DS)
+    WII = uint32(5)
+    EMUWII = uint32(6) # Unsupported / unused (WII emulation on PC)
+    VITA = uint32(7)   # Unsupported / unused (PlayStation Vita)
+    WIIU = uint32(8)
+    IPAD = uint32(9)
+    DURANGO = uint32(10)
+    NX = uint32(11)
+    GGP = uint32(12)
+    SCARLETT = uint32(13)
+    PROSPERO = uint32(14)
+    POSENET = uint32(15)
+    BLAZEPOSE = uint32(16)
+    UNDEFINED = uint32(17)
+    INVALID = uint32(0xffffffff)
 
 class Platform:
+    Id: uint32
+    Name: String8
+    
     def __init__(self, id=None):
         if id is None:
             self.Id = PlatformId.UNDEFINED
@@ -32,13 +37,19 @@ class Platform:
                 if platformId.name.lower() == id.lower():
                     self.Id = platformId
                     break
-
+    
+    def is_little_endian(self):
+        return self.Id in PlatformId.PC, PlatformId.X360, PlatformId.ORBIS, PlatformId.EMUWII, PlatformId.NX, PlatformId.SCARLETT, PlatformId.PROSPERO, PlatformId.BLAZEPOSE
+    
     @property
     def Name(self):
         return self.Id.name
 
-    def __str__(self):
-        return self.Name
+    def __int__(self) -> uint32:
+        return uint32(self.Id)
+    
+    def __str__(self) -> String8:
+        return String8(self.Name)
     
     def __eq__(self, __value: object) -> bool:
         if isinstance(__value, Platform):
@@ -61,5 +72,8 @@ WIIU = Platform(PlatformId.WIIU)
 IPAD = Platform(PlatformId.IPAD)
 DURANGO = Platform(PlatformId.DURANGO)
 NX = Platform(PlatformId.NX)
+GGP = Platform(PlatformId.GGP)
+PROSPERO = Platform(PlatformId.PROSPERO)
+SCARLETT = Platform(PlatformId.SCARLETT)
 POSENET = Platform(PlatformId.POSENET)
 BLAZEPOSE = Platform(PlatformId.BLAZEPOSE)
