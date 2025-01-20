@@ -26,7 +26,7 @@ Jd2019 = JdVersion(Name = "Just Dance 2019", ShortName = "JD2019", Number = 2019
 Jd2020 = JdVersion(Name = "Just Dance 2020", ShortName = "JD2020", Number = 2020)
 Jd2021 = JdVersion(Name = "Just Dance 2021", ShortName = "JD2021", Number = 2021)
 Jd2022 = JdVersion(Name = "Just Dance 2022", ShortName = "JD2022", Number = 2022)
-Jd2022 = JdVersion(Name = "Just Dance Next", ShortName = "JDNEXT", Number = 3333)
+JdNext = JdVersion(Name = "Just Dance Next", ShortName = "JDNEXT", Number = 3333)
 JdUnlimited = JdVersion(Name = "Just Dance Unlimited", ShortName = "JDU", Number = 9999)
 JdKids = JdVersion(Name = "Just Dance Kids", ShortName = "Kids", Number = 123)
 JdAbba = JdVersion(Name = "ABBA: You Can Dance", ShortName = "ABBA", Number = 4884)
