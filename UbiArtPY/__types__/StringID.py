@@ -1,6 +1,6 @@
 from .__base__ import uint32
-from functools import singledispatchmethod
-from ..Core import ArchiveMemory
+# from ..Core import ArchiveMemory  # circular import
+from .String8 import String8
 
 STRIDE = 1
 
@@ -68,38 +68,44 @@ def StrToCRC(_stride: uint32, _str: str, _len: uint32) -> uint32:
     return c
 
 class StringID:
-    InvalidId: uint32 = 0xFFFFFFFF
-    FullStringTag: uint32 = 0xEEEEEEEE
+    InvalidId: uint32 = uint32(0xFFFFFFFF)
+    FullStringTag: uint32 = uint32(0xEEEEEEEE)
     _id: uint32 = InvalidId
     _string: str = ""
 
     # Constructors and Converters
-    @singledispatchmethod
-    def __init__(self, value):
-        pass
-    @__init__.register
-    def _(self, string: str):
-        if string:
-            self._string = string
-            self._id = StrToCRC(STRIDE, string, len(string))
+    def __init__(self, value: String8 | uint32):
+        if isinstance(value, int):
+            self._id = uint32(value)
+        elif isinstance(value, StringID):
+            self._id = value._id
+            self._string = value._string
+        elif value:
+            self._string = String8(value)
+            self._id = StrToCRC(STRIDE, self._string, len(self._string))
         else:
             self._id = self.InvalidId
-    @__init__.register
-    def _(self, value: uint32):
-        self._id = value
-
+    
+    def __eq__(self, other: 'StringID') -> bool:
+        if isinstance(other, StringID):
+            return self._id == other._id
+    
     def __int__(self) -> uint32:
         return uint32(self._id)
+    
     def __str__(self):
         if self._string:
             return self._string
         return f"{self._id:x}"
 
+    def __repr__(self):
+        return f"StringID({self})"
+    
     def isValid(self) -> bool:
         return self._id != self.InvalidId
     
     def GetHashCode(self) -> uint32:
         return self._id
     
-    def serialize(self, _archive: ArchiveMemory):
+    def serialize(self, _archive: "ArchiveMemory"):
         self._id = _archive.serialize(self._id)
