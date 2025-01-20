@@ -1,13 +1,15 @@
 from .__base__ import uint32, uint8, get_sizeof
 from .String8 import String8
 from .StringID import StringID
-from ..Core import ArchiveMemory
+from ..Core import Versioning
+# from ..Core import ArchiveMemory  # circular import
 from pathlib import Path as PathlibPath
+from os import PathLike
 
 PATH_C_BUFFERSIZE: uint32 = uint32(256)
 MaxBasenameLength: uint32 = uint32(64 + 1) # Size, in character, of the basename. Includes the 0 character.
 
-class Path:
+class Path(PathLike):
     _path: PathlibPath
     _flags: uint32
     
@@ -16,8 +18,11 @@ class Path:
     def EmptyPath():
         return Path(String8(""))
     
-    def __init__(self, path: String8):
-        self._path = PathlibPath(path).resolve()
+    def __init__(self, *args: String8):
+        args = tuple(str(i) for i in args)
+        self._path = PathlibPath(*args)
+        self._flags = uint32(0) # NOT IMPLEMENTED
+        # TODO: implement flagss
 
     def __repr__(self):
         return f"Path({str(self)})"
@@ -25,16 +30,34 @@ class Path:
     def __str__(self):
         return self._path.as_posix() if self._path else ""
     
+    def __fspath__(self):
+        return str(self)
+    
+    def __hash__(self):
+        return int(self.getStringID().GetHashCode())
+    
+    def __eq__(self, other):
+        if isinstance(other, Path):
+            return str(self) == str(other)
+        elif isinstance(other, str):
+            return str(self) == other
+        elif isinstance(other, StringID):
+            return self.getStringID() == other
+        return False
+    
     def __len__(self):
         return len(str(self))
     
-    def serialize(self, _archive: ArchiveMemory, legacy: bool = False):
+    def serialize(self, _archive: "ArchiveMemory", legacy: bool = False):
         """_summary_
 
         Args:
             _archive (ArchiveMemory): ArchiveMemory object
             legacy (bool, optional): First iteration of the engine (ENGINEVER) serializes this object differently. Defaults to False.
         """
+        
+        if not legacy and Versioning.Engine == 2014: # TODO: put real jd2014 engine ver
+            legacy = True
         
         basename = self.getBasename()
         # Assert basename length
@@ -93,7 +116,7 @@ class Path:
         self._path = PathlibPath(directory, self._path.name)
 
     def isInsideDirectory(self, directory: String8) -> bool:
-        directory_path = PathlibPath(directory).resolve()
+        directory_path = PathlibPath(directory)
         return directory_path in self._path.parents
 
     def getDepth(self) -> uint32:
@@ -144,6 +167,3 @@ class Path:
 
     def appendPath(self, _other_path: 'Path'):
         self._path = self._path / _other_path._path
-
-    def join(self, _first: String8, _second: String8) -> 'Path':
-        return Path(String8(str(PathlibPath(_first, _second))))
