@@ -1,7 +1,8 @@
 from ..__types__ import uint32, Platform, JdVersion
 
-class Versioning:        
-    # Last engine version
+class Versioning:
+    EngineSignature = uint32(490359856)
+    Engine = uint32(253653)
     GlobalCache = uint32(2)
     LogicDatabaseCache = uint32(15)
     Texture = uint32(9)
