@@ -1,10 +1,10 @@
-from ..Core import ArchiveMemory
+# from ..Core import ArchiveMemory
 from .__base__ import uint32
 import base64
 
 class String8(str):
-    def serialize(self, am: ArchiveMemory) -> None:
-        size: uint32 = len(self)
+    def serialize(self, am: "ArchiveMemory") -> None:
+        size = uint32(len(self))
         size = am.serialize(size)
         
         content = am.serializeBlock8(self.encode(), size).decode("utf-8", errors="strict")
@@ -24,11 +24,11 @@ class String8(str):
         return super().encode(encoding, errors)
     
     def __bool__(self) -> bool:
-        if self:
-            if self.lower() == "false":
-                return False
-            if self.lower() == "true":
-                return True
+        if self.lower() == "false":
+            return False
+        if self.lower() == "true":
+            return True
+        return True
     
     def isInteger(self) -> bool:
         try:
