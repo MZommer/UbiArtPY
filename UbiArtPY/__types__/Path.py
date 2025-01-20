@@ -56,7 +56,7 @@ class Path(PathLike):
             legacy (bool, optional): First iteration of the engine (ENGINEVER) serializes this object differently. Defaults to False.
         """
         
-        if not legacy and Versioning.Engine == 2014: # TODO: put real jd2014 engine ver
+        if not legacy and Versioning.Engine >= 109470: # JD5 EngineVer (legacy path)
             legacy = True
         
         basename = self.getBasename()
