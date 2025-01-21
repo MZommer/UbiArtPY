@@ -293,7 +293,6 @@ class RAKI:
         # Hard codded
         self.__CookRAKIHeader(raki)
         # Chunks
-        print("Writting chunks data?")
         raki.write(b"fmt ")
         raki.write(struct.pack(">I", 0x5C if self.isAMB else 0x50))  # FMT chunk offset
         raki.write(struct.pack(">I", 0x12))  # FMT chunk size
