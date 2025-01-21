@@ -31,9 +31,7 @@ class Platform:
     AvailableVersions: tuple[JdVersion]
     
     def __init__(self, id=None, available: tuple[JdVersion] = None):
-        if id is None:
-            self.Id = PlatformId.UNDEFINED
-        elif isinstance(id, PlatformId):
+        if isinstance(id, PlatformId):
             self.Id = id
         elif isinstance(id, int):
             try:
@@ -46,6 +44,8 @@ class Platform:
                 if platformId.name.lower() == id.lower():
                     self.Id = platformId
                     break
+        else:
+            self.Id = PlatformId.UNDEFINED
         if available:
             self.AvailableVersions = available
         else:
