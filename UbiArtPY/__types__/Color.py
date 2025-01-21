@@ -9,7 +9,6 @@ class Color:
     
     # Constructors
     def __init__(self, *args):
-        print(len(args))
         if len(args) == 1 and isinstance(args[0], str):
             self._init_hex(args[0])
         elif len(args) == 3:
