@@ -1,4 +1,4 @@
-from ...__types__ import uint32, Platform, Platforms, StringID
+from ...__types__ import uint32, Platform, Platforms
 from ...Core import ArchiveMemory, Versioning, SerializableClass
 
 PACK_MAGICNUMBER: uint32 = uint32(0x50EC12BA)
@@ -33,6 +33,9 @@ class BundleHeader:
         self.EngineSignature = uint32(Versioning.EngineSignature)
         self.EngineVersion = uint32(Versioning.Engine) # TODO: make enviroment funcs
     
+    def __repr__(self):
+        return f"BundleHeader({self.Version}, {self.Platform}, {self.Compressed}, {self.EngineSignature}, {self.EngineVersion})"
+    
     def serialize(self, am: ArchiveMemory) -> None:
         self.MagicNumber = am.serialize(self.MagicNumber)
         assert self.MagicNumber == PACK_MAGICNUMBER, "Invalid magic! Not an IPK file."
@@ -40,7 +43,7 @@ class BundleHeader:
         # assert self.Version == Versioning.Bundle, "Invalid bundle version! Make sure the enviroment is properly set."
         self.PlatformSupported = am.serialize(self.PlatformSupported)
         if am.isReading():
-            self.Platform = Platform(self.PlatformSupported)
+            self.Platform = Platforms.GetPlatformFromId(self.PlatformSupported)
             assert self.Platform != Platforms.INVALID, "Invalid platform!"
         self.FilesStart = am.serialize(self.FilesStart)
         self.FilesCount = am.serialize(self.FilesCount)
@@ -50,6 +53,8 @@ class BundleHeader:
         self.DataSignature = am.serialize(self.DataSignature)
         self.EngineSignature = am.serialize(self.EngineSignature)
         self.EngineVersion = am.serialize(self.EngineVersion)
+        Versioning.Engine = self.EngineVersion
+        Versioning.EngineSignature = self.EngineSignature
     
     def compute_size(self) -> uint32:
         return uint32(44) # uint32 + uint32 + uint32 + uint32 + uint32 + uint32 + uint32 + uint32 + uint32 + uint32 + uint32
