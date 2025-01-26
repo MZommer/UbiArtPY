@@ -24,4 +24,10 @@ class Versioning:
 
     @staticmethod
     def set_game(jdver: JdVersion, platform: Platform):
-        pass # TODO: fill this with both new and old gen
+        if jdver == JdVersion.Jd2014:
+            Versioning.EngineSignature = uint32(3883161868)
+            Versioning.Engine = uint32(109470)
+        elif jdver == JdVersion.Jd2015:
+            pass
+        if jdver == JdVersion.Jd2016:
+            pass
