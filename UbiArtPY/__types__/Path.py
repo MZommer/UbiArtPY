@@ -56,9 +56,7 @@ class Path(PathLike):
             legacy (bool, optional): First iteration of the engine (ENGINEVER) serializes this object differently. Defaults to False.
         """
         
-        if not legacy and Versioning.Engine >= 109470: # JD5 EngineVer (legacy path)
-            legacy = True
-        
+        legacy = Versioning.Engine <= 109470 or legacy # JD5 EngineVer (legacy path)
         basename = self.getBasename()
         # Assert basename length
         assert len(basename) < MaxBasenameLength, f"Path.serialize basename length exceeds MaxBasenameLength ({MaxBasenameLength})"
@@ -71,20 +69,20 @@ class Path(PathLike):
         
         if legacy:
             basename.serialize(_archive)
-        
+
         if _archive.isReading():
             assert len(directory) < PATH_C_BUFFERSIZE, f"Path.serialize directory length is bigger than PATH_C_BUFFERSIZE ({PATH_C_BUFFERSIZE})"
             
             # Since we're using pathlib.Path instead of a directory entry system,
             # we'll store the directory directly
-            self._path = PathlibPath(directory, basename)
+            self._path = PathlibPath(directory) / basename
         
         _id = self.getStringID()
         _id.serialize(_archive)
         if _archive.isReading() and _archive.isStrict():
             assert _id == self.getStringID(), "Path.serialize stringid mismatch"
         
-        _archive.serialize(self._flags)
+        self._flags = _archive.serialize(self._flags)
 
     def getSerializeSize(self) -> uint32:
         directory = self.getDirectory()
@@ -142,28 +140,28 @@ class Path(PathLike):
         self._path = PathlibPath(new_directory, self._path.name)
 
     def copyAndChangeDirectory(self, new_directory: String8) -> 'Path':
-        return Path(String8(str(PathlibPath(new_directory, self._path.name))))
+        return Path(String8(PathlibPath(new_directory, self._path.name)))
 
     def changeBasename(self, basename: String8):
-        self._path = PathlibPath(self._path.parent, basename)
+        self._path = PathlibPath(self._path.parent / basename)
 
     def copyAndChangeBasename(self, new_basename: String8) -> 'Path':
-        return Path(String8(str(PathlibPath(self._path.parent, new_basename))))
+        return Path(String8(PathlibPath(self._path.parent, new_basename)))
 
     def changeExtension(self, extension: String8):
         self._path = self._path.with_suffix(extension)
 
     def copyAndChangeExtension(self, new_extension: String8) -> 'Path':
-        return Path(String8(str(self._path.with_suffix(new_extension))))
+        return Path(String8(self._path.with_suffix(new_extension)))
 
     def copyAndAppend(self, _suffix: String8) -> 'Path':
-        return Path(String8(str(self._path) + _suffix))
+        return Path(self._path / String8(_suffix))
 
     def copyAndAppendPath(self, _other_path: 'Path') -> 'Path':
-        return Path(String8(str(self._path / _other_path._path)))
+        return Path(String8(self._path / _other_path._path))
 
     def append(self, _suffix: String8):
-        self._path = PathlibPath(str(self._path) + _suffix)
+        self._path = PathlibPath(self._path / String8(_suffix))
 
     def appendPath(self, _other_path: 'Path'):
         self._path = self._path / _other_path._path
