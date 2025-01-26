@@ -63,6 +63,9 @@ class FileHeader:
         self.Position = uint64()
         self.FilePath = Path(itf_path)
     
+    def __repr__(self):
+        return f"FileHeader(OriginalSize={self.OriginalSize}, CompressedSize={self.CompressedSize}, FlushTime={self.FlushTime}, Positions={self.Positions}, Position={self.Position}, FilePath={self.FilePath})"
+    
     @property
     def Count(self) -> uint32:
         if self.Position:
