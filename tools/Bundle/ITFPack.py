@@ -7,7 +7,7 @@ class PackUnpackApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Pack/Unpack Utility")
-        self.root.geometry("550x250")
+        self.root.geometry("550x300")
 
         # Tabbed interface
         self.notebook = ttk.Notebook(root)
@@ -23,6 +23,9 @@ class PackUnpackApp:
 
         # Unpack tab
         self.create_unpack_tab()
+
+        # Engine information display
+        self.create_engine_info()
 
     def create_pack_tab(self):
         ttk.Label(self.pack_tab, text="Folder to Pack:").grid(row=0, column=0, pady=10, padx=10, sticky="w")
@@ -46,7 +49,7 @@ class PackUnpackApp:
         self.jd_version_menu = ttk.Combobox(self.pack_tab, textvariable=self.jd_version_var, state="readonly")
         self.jd_version_menu.grid(row=3, column=1, pady=10, padx=10)
 
-        ttk.Button(self.pack_tab, text="Pack Folder", command=self.pack_folder).grid(row=4, column=0, columnspan=3, pady=20)
+        ttk.Button(self.pack_tab, text="Pack Folder", command=self.pack_folder).grid(row=4, column=0, columnspan=3, pady=5)
 
         # Initialize JD versions based on the default platform
         self.update_versions()
@@ -63,6 +66,27 @@ class PackUnpackApp:
         ttk.Button(self.unpack_tab, text="Browse", command=self.browse_unpack_destination).grid(row=1, column=2, pady=10, padx=10)
 
         ttk.Button(self.unpack_tab, text="Unpack Bundle", command=self.unpack_bundle).grid(row=2, column=0, columnspan=3, pady=20)
+
+    def create_engine_info(self):
+        self.engine_frame = ttk.Frame(self.root)
+        self.engine_frame.pack(fill="x", padx=10, pady=0)
+
+        ttk.Label(self.engine_frame, text="Engine Signature:").grid(row=0, column=0, padx=5, pady=0, sticky="w")
+        self.engine_signature_label = ttk.Label(self.engine_frame, text="N/A")
+        self.engine_signature_label.grid(row=0, column=1, padx=5, pady=0, sticky="w")
+
+        ttk.Label(self.engine_frame, text="Engine Version:").grid(row=1, column=0, padx=5, pady=0, sticky="w")
+        self.engine_label = ttk.Label(self.engine_frame, text="N/A")
+        self.engine_label.grid(row=1, column=1, padx=5, pady=0, sticky="w")
+
+        self.update_engine_info()
+
+    def update_engine_info(self):
+        if hasattr(self, 'engine_signature_label') and hasattr(self, 'engine_label'):
+            self.engine_signature_label.config(text=str(Versioning.EngineSignature))
+            self.engine_label.config(text=str(Versioning.Engine))
+        else:
+            pass
 
     def browse_pack_folder(self):
         folder = filedialog.askdirectory(title="Select Folder to Pack")
@@ -111,6 +135,7 @@ class PackUnpackApp:
 
         if platform and jd_version:
             Versioning.set_game(jd_version, platform)
+            self.update_engine_info()
 
     def pack_folder(self):
         source = self.pack_folder_entry.get()
@@ -164,10 +189,13 @@ class PackUnpackApp:
 
         try:
             with PackFile(source, "r") as unpacker:
+                self.engine_signature_label.config(text=str(unpacker.Header.EngineSignature))
+                self.engine_label.config(text=str(unpacker.Header.EngineVersion))
                 unpacker.extract_all(destination)
                 messagebox.showinfo("Success", f"Bundle unpacked successfully to {destination}")
         except Exception as e:
             messagebox.showerror("Error", f"Failed to unpack bundle: {e}")
+            raise e
 
 if __name__ == "__main__":
     root = tk.Tk()
