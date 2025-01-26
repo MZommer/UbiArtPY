@@ -96,3 +96,15 @@ BLAZEPOSE = Platform(PlatformId.BLAZEPOSE, (JdIgnored))
 INVALID = Platform(PlatformId.INVALID, (JdIgnored))
 
 PLATFORMS = PC, X360, PS3, ORBIS, CTR, WII, EMUWII, VITA, WIIU, IPAD, DURANGO, NX, GGP, PROSPERO, SCARLETT, POSENET, BLAZEPOSE, INVALID
+
+def GetPlatformFromName(name: str):
+    for platform in PLATFORMS:
+        if platform.Name == name:
+            return platform
+    return INVALID
+
+def GetPlatformFromId(id: int):
+    for platform in PLATFORMS:
+        if platform.Id == id:
+            return platform
+    return INVALID

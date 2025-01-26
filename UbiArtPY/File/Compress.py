@@ -1,16 +1,17 @@
-from ..__types__ import Path, uint32, int32
+from ..__types__ import Path, uint32
 import zlib
+import lzma
 
 
 class Compress:
     COMPRESSION_SIZE = 32768
 
     @staticmethod
-    def get_max_chunk_size():
+    def get_max_chunk_size() -> int:
         return Compress.COMPRESSION_SIZE
 
     @staticmethod
-    def compute_size_required(source_size):
+    def compute_size_required(source_size) -> uint32:
         # Upon entry, destLen is the total size of the destination buffer,
         # which must be at least 0.1% larger than sourceLen plus 12 bytes
         target_size = uint32(source_size * 1.1 + 12 + 1)  # +1 roundup
@@ -74,7 +75,7 @@ class Compress:
         return True
 
     @staticmethod
-    def compress_buffer(source):
+    def compress_buffer_zlib(source) -> bytes:
         try:
             compressed_data = zlib.compress(source)
             return compressed_data
@@ -82,15 +83,33 @@ class Compress:
             raise MemoryError("Not enough memory to compress")
         except BufferError as e:
             raise BufferError(e)
+    
+    @staticmethod
+    def compress_buffer_lzma(source) -> bytes:
+        try:
+            compressed_data = lzma.compress(source)
+            return compressed_data
+        except MemoryError:
+            raise MemoryError("Not enough memory to compress")
+        except BufferError as e:
+            raise BufferError(e)
 
     @staticmethod
-    def uncompress_buffer(source):
+    def uncompress_buffer_zlib(source) -> bytes:
         try:
             decompressed_data = zlib.decompress(source)
             return decompressed_data
         except zlib.error as e:
             raise ValueError(f"Uncompress error: {e}")
 
+    @staticmethod
+    def uncompress_buffer_lzma(source) -> bytes:
+        try:
+            decompressed_data = lzma.decompress(source)
+            return decompressed_data
+        except lzma.LZMAError as e:
+            raise ValueError(f"Uncompress error: {e}")
+    
     @staticmethod
     def parse_gzip_buffer(source):
         header_size = 10

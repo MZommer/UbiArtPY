@@ -5,10 +5,11 @@ from .BundleHeader import BundleHeader
 from .FileHeader import FileHeader, FileHeadersWrapper
 from io import BytesIO
 import os.path
-from ..FileHelpers import get_windows_file_timestamps
+from ..FileHelpers import get_windows_file_timestamps, override_timestamps
 from ..Compress import Compress
 
 FILES_TO_COMPRESS = ".s3d.ckd", ".a3d.ckd", ".m3d.ckd", ".tga.ckd", ".png.ckd", ".anm.ckd", ".fx.fxb", ".dtape.ckd"
+CHUNK_LENGTH = 1024*1024
 
 @dataclass(frozen=True, slots=True)
 class RegisteredFile:
@@ -47,7 +48,7 @@ class PackFile: # IPK (ITF Pack)
             self._archive = ArchiveMemory.write_from_path(path)
     
     # Read methods
-    def extract(self, folder: Path, file: Path, overwrite: bool = False) -> None:
+    def extract(self, folder: Path, file: FileHeader, overwrite: bool = False) -> None:
         """Extracts a file from the IPK to the given folder.
 
         Args:
@@ -55,26 +56,35 @@ class PackFile: # IPK (ITF Pack)
             file (Path): File to extract.
             overwrite (bool, optional): Overwrite existing file. Default False.
         """
+        
         if not self._archive.isReading():
             raise PermissionError("File is not open for reading.")
+        
+        folder = Path(folder)
+        file = Path(file)
         
         header = self.Files.get_header(file)
         if header is None:
             raise FileNotFoundError(f"File {file} not found in IPK.")
         
-        abspath = folder.append(file)
+        abspath = folder.copyAndAppend(file)
         if not overwrite:
             if os.path.isfile(abspath):
                 return # skipping file
+        os.makedirs(abspath.getDirectory(), exist_ok=True)  # create directory
         
         with open(abspath, "wb") as f:
-            if header.compressed_size != 0:
-                raise NotImplementedError("Compressed files are not supported yet.")
-                self._extract_compressed(header, f)
+            self._archive.seek(self.Header.FilesStart + header.Position)
+            if header.CompressedSize != 0:
+                try:
+                    self._extract_compressed(header, f)
+                except Exception as e:
+                    print(e)
             else:
-                self._archive.seek(header.Position)
-                data = self._archive.read(header.OriginalSize)
+                # TODO: add write chunks for big files
+                data = self._archive.serializeBlock8(None, header.OriginalSize)
                 f.write(data)
+            override_timestamps(abspath, header.FlushTime, header.FlushTime)
     
     def _extract_compressed(self, header: FileHeader, stream: BytesIO) -> None:
         """Extracts a compressed file from the IPK to the given folder.
@@ -83,9 +93,13 @@ class PackFile: # IPK (ITF Pack)
             header (FileHeader): Header of the file to extract.
             stream: (BytesIO): File stream to write.
         """
-        if header.compressed_size == 0:
+        if header.CompressedSize == 0:
             raise ValueError(f"File {header.FilePath} is not compressed.")
-        ## TODO: IMPLEMENT handle compressed check if final file is size its supposed to be
+        compressed = self._archive.serializeBlock8(None, header.CompressedSize)
+        data = Compress.uncompress_buffer_zlib(compressed)
+        if len(data) != header.OriginalSize:
+            raise OverflowError(f"File {header.FilePath} is corrupted. Expected size {header.OriginalSize} but got {len(data)}")
+        stream.write(data)
     
     def extract_all(self, folder: Path, overwrite: bool = False) -> None:
         """Extracts all files from the IPK to the given folder.
@@ -168,7 +182,7 @@ class PackFile: # IPK (ITF Pack)
                     data = Compress.compress_buffer(data)
                     size = uint32(len(data))
                     header.CompressedSize = size
-                
+                # TODO: Add read and write in chunks to optimize big files
                 self._archive.serializeBlock8(data, size)
         
         self._archive.seek(0)
