@@ -90,6 +90,9 @@ class StringID:
         if isinstance(other, StringID):
             return self._id == other._id
     
+    def __hash__(self):
+        return int(self._id)
+    
     def __int__(self) -> uint32:
         return uint32(self._id)
     
