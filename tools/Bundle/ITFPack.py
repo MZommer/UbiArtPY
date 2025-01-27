@@ -189,8 +189,7 @@ class PackUnpackApp:
 
         try:
             with PackFile(source, "r") as unpacker:
-                self.engine_signature_label.config(text=str(unpacker.Header.EngineSignature))
-                self.engine_label.config(text=str(unpacker.Header.EngineVersion))
+                self.update_engine_info()
                 unpacker.extract_all(destination)
                 messagebox.showinfo("Success", f"Bundle unpacked successfully to {destination}")
         except Exception as e:
