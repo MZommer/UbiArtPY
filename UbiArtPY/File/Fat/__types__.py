@@ -20,7 +20,7 @@ class FileLink:
         self.bundleId = FileLinkBundleId()
         self.bundleIds = FileLinkBundleIds()
 
-BundleSet = set[StringID]
+BundleSet = set[String8]
 FileSet = dict[Path, BundleSet]
 TOC8 = dict[String8, uint8]
 BundleTOC = dict[uint8, String8]
