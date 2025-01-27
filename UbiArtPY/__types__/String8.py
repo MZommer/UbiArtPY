@@ -27,6 +27,9 @@ class String8(str): # to keep compatibility
 
     def __eq__(self, other):
         return self.state == str(other)
+    
+    def __hash__(self):
+        return hash(self.state)
 
     # String methods
     def lower(self):
@@ -40,6 +43,9 @@ class String8(str): # to keep compatibility
 
     def split(self, sep=None, maxsplit=-1):
         return self.state.split(sep, maxsplit)
+    
+    def rsplit(self, sep=None, maxsplit=-1):
+        return self.state.rsplit(sep, maxsplit)
 
     def replace(self, old, new, count=-1):
         return String8(self.state.replace(old, new, count))
