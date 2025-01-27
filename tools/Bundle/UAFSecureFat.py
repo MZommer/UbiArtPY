@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
-from UbiArtPY import PackFile, Versioning, FatBuilder, StringID
+from UbiArtPY import PackFile, Versioning, FatBuilder, StringID, Path
 import os
 import threading
 
@@ -216,8 +216,9 @@ class UafSecureFat:
         try:
             builder = FatBuilder()
             for bundle, file_list in self.files.items():
+                bundleName = Path(bundle).getBasenameWithoutExtension().rsplit("_", 1)[0]
                 for file in file_list:
-                    builder.referenceFile(file, bundle)
+                    builder.referenceFile(file, bundleName)
 
             builder.save(destination)
             messagebox.showinfo("Success", f"Secure FAT saved successfully to {destination}")
