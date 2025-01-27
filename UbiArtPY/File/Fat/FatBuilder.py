@@ -14,7 +14,7 @@ class FatBuilder:
         bundleFilename = String8(bundleFilename)
         if path not in self.m_files:
             self.m_files[path] = BundleSet()
-        self.m_files[path].add(StringID(bundleFilename))
+        self.m_files[path].add(bundleFilename)
     
     def save(self, filename: Path) -> bool:
         retval: bool = False
