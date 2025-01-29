@@ -1,7 +1,29 @@
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
-from UbiArtPY import PackFile, PLATFORMS, Path, JdVersion, Versioning
+from UbiArtPY import PackFile, Platform, PLATFORMS, Path, JdVersion, Versioning
 import os
+import argparse
+
+def pack_folder(source: Path, destination: Path, platform: Platform, jd_version: JdVersion):
+    Versioning.set_game(jd_version, platform)  # ensure enviroment is set up
+    source = Path(source)
+    destination = Path(destination)
+    with PackFile(destination, "w", platform) as packer:
+        root = Path(source)
+        for directory, _, files in os.walk(source):
+            directory = Path(directory)
+            for file in files:
+                file = Path(file)
+                full_path = directory.copyAndAppendPath(file)
+                itf_path = Path(str(full_path).replace(str(root) + "/", ""))
+                packer.register_file(full_path, itf_path)
+            packer.save()
+
+def unpack_bundle(source: Path, destination: Path):
+    destination = Path(destination)
+    with PackFile(source, "r") as unpacker:
+        unpacker.extract_all(destination)
+        return unpacker.Header
 
 class PackUnpackApp:
     def __init__(self, root):
@@ -160,16 +182,7 @@ class PackUnpackApp:
             return
 
         try:
-            with PackFile(destination, "w", platform) as packer:
-                root = Path(source)
-                for directory, _, files in os.walk(source):
-                    directory = Path(directory)
-                    for file in files:
-                        file = Path(file)
-                        full_path = directory.copyAndAppendPath(file)
-                        itf_path = Path(str(full_path).replace(str(root) + "/", ""))
-                        packer.register_file(full_path, itf_path)
-                packer.save()
+            pack_folder(source, destination, platform, jd_version)
             messagebox.showinfo("Success", f"Folder packed successfully to {destination}")
         except Exception as e:
             messagebox.showerror("Error", f"Failed to pack folder: {e}")
@@ -197,6 +210,36 @@ class PackUnpackApp:
             raise e
 
 if __name__ == "__main__":
-    root = tk.Tk()
-    app = PackUnpackApp(root)
-    root.mainloop()
+    print("ITFPack | UbiArtPy")
+    parser = argparse.ArgumentParser(description="Pack/Unpack Utility")
+    parser.add_argument("-p", "--pack", nargs=2, metavar=("{src}", "{dest}"), help="Pack a folder into a bundle")
+    parser.add_argument("-u", "--unpack", nargs=2, metavar=("{src}", "{dest}"), help="Unpack a bundle into a folder")
+    parser.add_argument("--platform", default="PC", choices=("PC", "X360", "PS3", "ORBIS", "WII", "WIIU", "DURANGO", "NX", "GGP", "PROSPERO", "SCARLETT"), help="Specify the platform (default: PC) *Pack only*")
+    parser.add_argument("--game", type=int, default=2017, choices=(2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022), help="Specify the game version (default: 2017) *Pack only*")
+    args = parser.parse_args()
+    
+    if args.pack:
+        platform = next((p for p in PLATFORMS if p.Name == args.platform.upper()), None)
+        jd_version = next((v for v in JdVersion.All if v.Number == args.game), None)
+        if not platform or not jd_version:
+            print("Invalid platform or game version selected.")
+            exit(1)
+        pack_folder(args.pack[0], args.pack[1], platform, jd_version)
+        print("Folder packed successfully.")
+    elif args.unpack:
+        header = unpack_bundle(args.unpack[0], args.unpack[1])
+        print("Bundle Data:")
+        print(f"  Bundle Version:    {header.Version}")
+        print(f"  File Count:        {header.FilesCount}")
+        print(f"  Platform:          {header.Platform}")
+        print(f"  Engine:            {header.EngineVersion}")
+        print(f"  Engine Signature:  {header.EngineSignature}")
+        print(f"  Engine Version:    {header.EngineVersion}")
+        print(f"  Compressed:        {header.Compressed}")
+        print(f"  Binary Logic:      {header.BinaryScene}")
+        print(f"  Binary Logic:      {header.BinaryLogic}")
+        print("Bundle unpacked successfully.")
+    else:
+        root = tk.Tk()
+        app = PackUnpackApp(root)
+        root.mainloop()
