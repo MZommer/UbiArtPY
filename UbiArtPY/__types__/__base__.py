@@ -1,3 +1,4 @@
+import warnings
 from BinaryHelper.__types__ import *
 """
 from Binary Helper 
@@ -14,3 +15,5 @@ from Binary Helper
     get_sizeof, get_type_format 
 """
 BaseTypes = int8, uint8, int16, uint16, uint32, int32, float32, float64, bool, str, list, dict, tuple
+
+warnings.filterwarnings('ignore')  # suppress numpy warnings eg. overflow in crc
