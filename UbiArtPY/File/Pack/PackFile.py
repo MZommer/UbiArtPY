@@ -48,7 +48,7 @@ class PackFile: # IPK (ITF Pack)
             self._archive = ArchiveMemory.write_from_path(path)
     
     # Read methods
-    def extract(self, folder: Path, file: FileHeader, overwrite: bool = False) -> None:
+    def extract(self, folder: Path, file: FileHeader, overwrite: bool = True) -> None:
         """Extracts a file from the IPK to the given folder.
 
         Args:
@@ -76,10 +76,7 @@ class PackFile: # IPK (ITF Pack)
         with open(abspath, "wb") as f:
             self._archive.seek(self.Header.FilesStart + header.Position)
             if header.CompressedSize != 0:
-                try:
-                    self._extract_compressed(header, f)
-                except Exception as e:
-                    print(e)
+                self._extract_compressed(header, f)
             else:
                 # TODO: add write chunks for big files
                 data = self._archive.serializeBlock8(None, header.OriginalSize)
@@ -179,7 +176,7 @@ class PackFile: # IPK (ITF Pack)
                 header.Positions.append(header.Position)
                 
                 if rfile.compress:
-                    data = Compress.compress_buffer(data)
+                    data = Compress.compress_buffer_zlib(data)
                     size = uint32(len(data))
                     header.CompressedSize = size
                 # TODO: Add read and write in chunks to optimize big files
