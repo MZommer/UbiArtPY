@@ -82,7 +82,7 @@ class Compress:
         except MemoryError:
             raise MemoryError("Not enough memory to compress")
         except BufferError as e:
-            raise BufferError(e)
+            raise e
     
     @staticmethod
     def compress_buffer_lzma(source) -> bytes:
@@ -92,23 +92,17 @@ class Compress:
         except MemoryError:
             raise MemoryError("Not enough memory to compress")
         except BufferError as e:
-            raise BufferError(e)
+            raise e
 
     @staticmethod
     def uncompress_buffer_zlib(source) -> bytes:
-        try:
-            decompressed_data = zlib.decompress(source)
-            return decompressed_data
-        except zlib.error as e:
-            raise ValueError(f"Uncompress error: {e}")
+        decompressed_data = zlib.decompress(source)
+        return decompressed_data
 
     @staticmethod
     def uncompress_buffer_lzma(source) -> bytes:
-        try:
-            decompressed_data = lzma.decompress(source)
-            return decompressed_data
-        except lzma.LZMAError as e:
-            raise ValueError(f"Uncompress error: {e}")
+        decompressed_data = lzma.decompress(source)
+        return decompressed_data
     
     @staticmethod
     def parse_gzip_buffer(source):
