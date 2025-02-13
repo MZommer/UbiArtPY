@@ -159,6 +159,7 @@ class PackFile: # IPK (ITF Pack)
         self.Header.FilesStart = self.Header.compute_size() + self.Files.compute_size()
         self.Header.FilesCount = uint32(len(self.Files))        
         self._archive.reserve(self.Header.FilesStart)
+        self._archive.seek(self.Header.FilesStart)
         
 
         for rfile in self._register.values():
@@ -170,10 +171,9 @@ class PackFile: # IPK (ITF Pack)
                 data = f.read()
                 size = uint32(f.tell())
                 header.OriginalSize = uint32(size)
-                
                 # TODO: Add file replication for discs
                 header.Position = uint64(self._archive.getSeekPos())
-                header.Positions.append(header.Position)
+                header.Positions = [header.Position]
                 
                 if rfile.compress:
                     data = Compress.compress_buffer_zlib(data)
@@ -182,7 +182,7 @@ class PackFile: # IPK (ITF Pack)
                 # TODO: Add read and write in chunks to optimize big files
                 self._archive.serializeBlock8(data, size)
         
-        self._archive.seek(0)
+        self._archive.rewindForWriting()
         self.Header.serialize(self._archive)
         self.Files.serialize(self._archive)
         
