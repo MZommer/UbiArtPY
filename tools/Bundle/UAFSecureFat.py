@@ -8,7 +8,7 @@ class UafSecureFat:
     def __init__(self, root):
         self.root = root
         self.root.title("Secure FATs Utility")
-        self.root.geometry("900x700")
+        self.root.geometry("800x400")
         self.root.resizable(False, False)
 
         self.bundles = []
@@ -25,9 +25,6 @@ class UafSecureFat:
         bundles_frame = ttk.Frame(self.root)
         bundles_frame.pack(fill="both", expand=True, padx=10, pady=5)
 
-        files_frame = ttk.LabelFrame(self.root, text="Files in FAT", padding=10)
-        files_frame.pack(fill="both", expand=True, padx=10, pady=5)
-
         engine_frame = ttk.LabelFrame(self.root, text="Engine Info", padding=10)
         engine_frame.pack(fill="x", padx=10, pady=5)
 
@@ -35,9 +32,11 @@ class UafSecureFat:
         self.add_bundles_button = ttk.Button(control_frame, text="Add Bundles", command=self.add_bundles_thread)
         self.add_bundles_button.pack(side="left", padx=5)
         
-        ttk.Button(control_frame, text="Reload All Bundles", command=self.reload_all_bundles).pack(side="left", padx=5)
+        self.reload_bundles = ttk.Button(control_frame, text="Reload All Bundles", command=self.reload_all_bundles)
+        self.reload_bundles.pack(side="left", padx=5)
         
-        ttk.Button(control_frame, text="Save Secure FAT", command=self.save_securefat).pack(side="left", padx=5)
+        self.save_fat = ttk.Button(control_frame, text="Save Secure FAT", command=self.save_securefat)
+        self.save_fat.pack(side="left", padx=5)
 
         ttk.Button(control_frame, text="Exit", command=self.root.quit).pack(side="right", padx=5)
 
@@ -66,25 +65,6 @@ class UafSecureFat:
         ttk.Button(bundle_buttons, text="Reload", command=self.reload_bundle).pack(fill="x", pady=2)
         ttk.Button(bundle_buttons, text="Delete", command=self.delete_bundle).pack(fill="x", pady=2)
 
-        # Files list with scrollbar
-        files_container = ttk.Frame(files_frame)
-        files_container.pack(fill="both", expand=True)
-
-        files_scroll = ttk.Scrollbar(files_container, orient="vertical")
-        files_scroll.pack(side="right", fill="y")
-
-        self.files_tree = ttk.Treeview(
-            files_container, columns=("Bundle", "StringID"), show="tree", yscrollcommand=files_scroll.set, height=10
-        )
-        self.files_tree.heading("#0", text="Files")
-        self.files_tree.heading("Bundle", text="Bundle")
-        self.files_tree.heading("StringID", text="StringID")
-        self.files_tree.column("#0", width=500, anchor="w")
-        self.files_tree.column("Bundle", width=50, anchor="e")
-        self.files_tree.column("StringID", width=5, anchor="e")
-        self.files_tree.pack(fill="both", expand=True)
-        files_scroll.config(command=self.files_tree.yview)
-
         # Engine Info
         ttk.Label(engine_frame, text="Engine Signature:").grid(row=0, column=0, sticky="w")
         self.engine_signature_label = ttk.Label(engine_frame, text="N/A")
@@ -104,6 +84,8 @@ class UafSecureFat:
 
     def add_bundle(self):
         self.add_bundles_button.config(state="disabled")
+        self.reload_bundles.config(state="disabled")
+        self.save_fat.config(state="disabled")
         files = filedialog.askopenfilenames(title="Select Bundle Files", filetypes=[("IPK Files", "*.ipk")])
         if files:
             try:
@@ -127,6 +109,8 @@ class UafSecureFat:
                 messagebox.showerror("Error", f"Failed to load bundle: {e}")
                 raise e
         self.add_bundles_button.config(state="normal")
+        self.reload_bundles.config(state="normal")
+        self.save_fat.config(state="normal")
 
     def refresh_bundle_tree(self):
         self.bundle_tree.delete(*self.bundle_tree.get_children())
@@ -138,7 +122,6 @@ class UafSecureFat:
         self.refresh_files_tree()
 
     def refresh_files_tree(self):
-        self.files_tree.delete(*self.files_tree.get_children())
         file_collisions = {}
 
         for bundle, file_list in self.files.items():
@@ -147,17 +130,6 @@ class UafSecureFat:
                     file_collisions[file] = []
                 file_collisions[file].append((bundle, string_id))
 
-        for file, bundles in file_collisions.items():
-            file_id = self.files_tree.insert(
-                "", "end", text=file, 
-                values=(os.path.basename(bundles[0][0]) if len(bundles) == 1 else "Collision", f"{bundles[0][1].GetHashCode():0x}".upper())
-            )
-            if len(bundles) > 1:
-                self.files_tree.item(file_id, tags=("collision",))
-                for bundle, _ in bundles:
-                    self.files_tree.insert(file_id, "end", text=os.path.basename(bundle))
-
-        self.files_tree.tag_configure("collision", background="red")
 
     def move_bundle_up(self):
         selected = self.bundle_tree.selection()
