@@ -59,8 +59,8 @@ class FileHeader:
         self.OriginalSize = uint32(original_size)
         self.CompressedSize = uint32(compressed_size)
         self.FlushTime = uint64(flush_time)
-        self.Positions = []
         self.Position = uint64()
+        self.Positions = [self.Position]
         self.FilePath = Path(itf_path)
     
     def __repr__(self):
@@ -68,8 +68,6 @@ class FileHeader:
     
     @property
     def Count(self) -> uint32:
-        if self.Position:
-            return uint32(1) # Single position case
         return uint32(len(self.Positions))
     
     def set_position(self, position: uint64) -> None:
@@ -79,8 +77,8 @@ class FileHeader:
         return self.Positions[index]
     
     def compute_size(self) -> uint32:
-        return uint32(4 + 4 + 4 + 8 + 8 * self.Count + len(self.FilePath))
-        # sizeof(Count) + sizeof(OriginalSize) + sizeof(CompressedSize) + sizeof(FlushTime) + sizeof(Position) * Count + path.size
+        return uint32(4 + 4 + 4 + 8 + (8 * self.Count) + self.FilePath.getSerializeSize())
+        # sizeof(Count) + sizeof(OriginalSize) + sizeof(CompressedSize) + sizeof(FlushTime) + sizeof(Position) * Count + path.getSerializeSize
 
     def serialize(self, am: ArchiveMemory) -> None:
         count = am.serialize(self.Count)
@@ -98,6 +96,7 @@ class FileHeader:
             
             if count > 1:
                 self.Positions = [am.serialize(uint64()) for _ in range(count)]
+                self.Position = self.Positions[0]
             else:
                 # For single position case
                 self.Position = am.serialize(uint64())
