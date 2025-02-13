@@ -17,7 +17,7 @@ def pack_folder(source: Path, destination: Path, platform: Platform, jd_version:
                 full_path = directory.copyAndAppendPath(file)
                 itf_path = Path(str(full_path).replace(str(root) + "/", ""))
                 packer.register_file(full_path, itf_path)
-            packer.save()
+        packer.save()
 
 def unpack_bundle(source: Path, destination: Path):
     destination = Path(destination)
@@ -226,6 +226,7 @@ if __name__ == "__main__":
             exit(1)
         pack_folder(args.pack[0], args.pack[1], platform, jd_version)
         print("Folder packed successfully.")
+        # Add search filter for files
     elif args.unpack:
         header = unpack_bundle(args.unpack[0], args.unpack[1])
         print("Bundle Data:")
@@ -239,6 +240,7 @@ if __name__ == "__main__":
         print(f"  Binary Logic:      {header.BinaryScene}")
         print(f"  Binary Logic:      {header.BinaryLogic}")
         print("Bundle unpacked successfully.")
+    # list files
     else:
         root = tk.Tk()
         app = PackUnpackApp(root)
