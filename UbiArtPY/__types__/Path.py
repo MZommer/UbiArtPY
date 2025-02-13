@@ -45,6 +45,21 @@ class Path(PathLike):
             return self.getStringID() == other
         return False
     
+    def __ne__(self, other):
+        return not self.__eq__(other)
+    
+    def __lt__(self, other):
+        return str(self) < str(other)
+    
+    def __gt__(self, other):
+        return str(self) > str(other)
+    
+    def __le__(self, other):
+        return str(self) <= str(other)
+    
+    def __ge__(self, other):
+        return str(self) >= str(other)
+    
     def __len__(self):
         return len(str(self))
     
@@ -93,12 +108,14 @@ class Path(PathLike):
         len_basename = len(basename)
         
         # Calculate total size
-        return (get_sizeof(uint32)                    # directory length
-                + len_directory * get_sizeof(uint8)   # directory
-                + get_sizeof(uint32)                  # basename length
-                + len_basename * get_sizeof(uint8)    # basename
-                + get_sizeof(uint32)                  # string ID
-                + get_sizeof(uint32))                 # flags
+        return (
+            get_sizeof(uint32)                    # directory length
+            + len_directory * get_sizeof(uint8)   # directory
+            + get_sizeof(uint32)                  # basename length
+            + len_basename * get_sizeof(uint8)    # basename
+            + get_sizeof(uint32)                  # string ID
+            + get_sizeof(uint32)                  # flags
+            )
 
 
     def getStringID(self) -> StringID:
