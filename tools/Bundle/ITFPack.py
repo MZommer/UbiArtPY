@@ -3,9 +3,11 @@ from tkinter import ttk, filedialog, messagebox
 from UbiArtPY import PackFile, Platform, PLATFORMS, Path, JdVersion, Versioning
 import os
 import argparse
+import threading
 
 def pack_folder(source: Path, destination: Path, platform: Platform, jd_version: JdVersion):
-    Versioning.set_game(jd_version, platform)  # ensure enviroment is set up
+    """Packs a folder into a bundle."""
+    Versioning.set_game(jd_version, platform)  # Ensure environment is set up
     source = Path(source)
     destination = Path(destination)
     with PackFile(destination, "w", platform) as packer:
@@ -20,6 +22,7 @@ def pack_folder(source: Path, destination: Path, platform: Platform, jd_version:
         packer.save()
 
 def unpack_bundle(source: Path, destination: Path):
+    """Unpacks a bundle into a folder."""
     destination = Path(destination)
     with PackFile(source, "r") as unpacker:
         unpacker.extract_all(destination)
@@ -29,7 +32,8 @@ class PackUnpackApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Pack/Unpack Utility")
-        self.root.geometry("550x300")
+        self.root.geometry("550x350")
+        self.root.resizable(True, True)  # Allow resizing for better usability
 
         # Tabbed interface
         self.notebook = ttk.Notebook(root)
@@ -49,7 +53,18 @@ class PackUnpackApp:
         # Engine information display
         self.create_engine_info()
 
+        # Progress bar and status label
+        self.progress_frame = ttk.Frame(self.root)
+        self.progress_frame.pack(fill="x", padx=10, pady=5)
+
+        self.progress_label = ttk.Label(self.progress_frame, text="Status: Idle")
+        self.progress_label.pack(side="left", padx=5)
+
+        self.progress_bar = ttk.Progressbar(self.progress_frame, mode="determinate")
+        self.progress_bar.pack(fill="x", expand=True, padx=5)
+
     def create_pack_tab(self):
+        """Creates the Pack tab UI."""
         ttk.Label(self.pack_tab, text="Folder to Pack:").grid(row=0, column=0, pady=10, padx=10, sticky="w")
         self.pack_folder_entry = ttk.Entry(self.pack_tab, width=50)
         self.pack_folder_entry.grid(row=0, column=1, pady=10, padx=10)
@@ -71,12 +86,13 @@ class PackUnpackApp:
         self.jd_version_menu = ttk.Combobox(self.pack_tab, textvariable=self.jd_version_var, state="readonly")
         self.jd_version_menu.grid(row=3, column=1, pady=10, padx=10)
 
-        ttk.Button(self.pack_tab, text="Pack Folder", command=self.pack_folder).grid(row=4, column=0, columnspan=3, pady=5)
+        ttk.Button(self.pack_tab, text="Pack Folder", command=self.pack_folder_thread).grid(row=4, column=0, columnspan=3, pady=5)
 
         # Initialize JD versions based on the default platform
         self.update_versions()
 
     def create_unpack_tab(self):
+        """Creates the Unpack tab UI."""
         ttk.Label(self.unpack_tab, text="Bundle to Unpack:").grid(row=0, column=0, pady=10, padx=10, sticky="w")
         self.unpack_file_entry = ttk.Entry(self.unpack_tab, width=50)
         self.unpack_file_entry.grid(row=0, column=1, pady=10, padx=10)
@@ -87,9 +103,10 @@ class PackUnpackApp:
         self.unpack_destination_entry.grid(row=1, column=1, pady=10, padx=10)
         ttk.Button(self.unpack_tab, text="Browse", command=self.browse_unpack_destination).grid(row=1, column=2, pady=10, padx=10)
 
-        ttk.Button(self.unpack_tab, text="Unpack Bundle", command=self.unpack_bundle).grid(row=2, column=0, columnspan=3, pady=20)
+        ttk.Button(self.unpack_tab, text="Unpack Bundle", command=self.unpack_bundle_thread).grid(row=2, column=0, columnspan=3, pady=20)
 
     def create_engine_info(self):
+        """Creates the engine information display."""
         self.engine_frame = ttk.Frame(self.root)
         self.engine_frame.pack(fill="x", padx=10, pady=0)
 
@@ -104,19 +121,20 @@ class PackUnpackApp:
         self.update_engine_info()
 
     def update_engine_info(self):
+        """Updates the engine information labels."""
         if hasattr(self, 'engine_signature_label') and hasattr(self, 'engine_label'):
             self.engine_signature_label.config(text=str(Versioning.EngineSignature))
             self.engine_label.config(text=str(Versioning.Engine))
-        else:
-            pass
 
     def browse_pack_folder(self):
+        """Opens a dialog to select a folder to pack."""
         folder = filedialog.askdirectory(title="Select Folder to Pack")
         if folder:
             self.pack_folder_entry.delete(0, tk.END)
             self.pack_folder_entry.insert(0, folder)
 
     def browse_pack_destination(self):
+        """Opens a dialog to select a destination file for packing."""
         file = filedialog.asksaveasfilename(title="Select Destination File", defaultextension=".ipk",
                                             filetypes=[("IPK Files", "*.ipk")])
         if file:
@@ -124,18 +142,21 @@ class PackUnpackApp:
             self.pack_destination_entry.insert(0, file)
 
     def browse_unpack_file(self):
+        """Opens a dialog to select a bundle file to unpack."""
         file = filedialog.askopenfilename(title="Select Bundle File", filetypes=[("IPK Files", "*.ipk")])
         if file:
             self.unpack_file_entry.delete(0, tk.END)
             self.unpack_file_entry.insert(0, file)
 
     def browse_unpack_destination(self):
+        """Opens a dialog to select a destination folder for unpacking."""
         folder = filedialog.askdirectory(title="Select Destination Folder")
         if folder:
             self.unpack_destination_entry.delete(0, tk.END)
             self.unpack_destination_entry.insert(0, folder)
 
     def update_versions(self, event=None):
+        """Updates the JD version dropdown based on the selected platform."""
         platform_name = self.platform_var.get()
         platform = next((p for p in PLATFORMS if p.Name == platform_name), None)
 
@@ -149,6 +170,7 @@ class PackUnpackApp:
         self.set_versioning()
 
     def set_versioning(self):
+        """Sets the game versioning based on the selected platform and JD version."""
         platform_name = self.platform_var.get()
         jd_version_name = self.jd_version_var.get()
 
@@ -159,7 +181,32 @@ class PackUnpackApp:
             Versioning.set_game(jd_version, platform)
             self.update_engine_info()
 
+    def pack_folder_thread(self):
+        """Starts a thread to pack a folder."""
+        self.progress_label.config(text="Status: Packing...")
+        self.progress_bar["value"] = 0
+        thread = threading.Thread(target=self.pack_folder)
+        thread.start()
+        self.root.after(100, self.check_thread, thread)
+
+    def unpack_bundle_thread(self):
+        """Starts a thread to unpack a bundle."""
+        self.progress_label.config(text="Status: Unpacking...")
+        self.progress_bar["value"] = 0
+        thread = threading.Thread(target=self.unpack_bundle)
+        thread.start()
+        self.root.after(100, self.check_thread, thread)
+
+    def check_thread(self, thread):
+        """Monitors the thread and updates the progress bar."""
+        if thread.is_alive():
+            self.root.after(100, self.check_thread, thread)
+        else:
+            self.progress_label.config(text="Status: Idle")
+            self.progress_bar["value"] = 100
+
     def pack_folder(self):
+        """Packs the selected folder into a bundle."""
         source = self.pack_folder_entry.get()
         destination = self.pack_destination_entry.get()
 
@@ -186,9 +233,9 @@ class PackUnpackApp:
             messagebox.showinfo("Success", f"Folder packed successfully to {destination}")
         except Exception as e:
             messagebox.showerror("Error", f"Failed to pack folder: {e}")
-            raise e
 
     def unpack_bundle(self):
+        """Unpacks the selected bundle into a folder."""
         source = self.unpack_file_entry.get()
         destination = self.unpack_destination_entry.get()
 
@@ -207,7 +254,6 @@ class PackUnpackApp:
                 messagebox.showinfo("Success", f"Bundle unpacked successfully to {destination}")
         except Exception as e:
             messagebox.showerror("Error", f"Failed to unpack bundle: {e}")
-            raise e
 
 if __name__ == "__main__":
     print("ITFPack | UbiArtPy")
@@ -226,7 +272,6 @@ if __name__ == "__main__":
             exit(1)
         pack_folder(args.pack[0], args.pack[1], platform, jd_version)
         print("Folder packed successfully.")
-        # Add search filter for files
     elif args.unpack:
         header = unpack_bundle(args.unpack[0], args.unpack[1])
         print("Bundle Data:")
@@ -240,7 +285,6 @@ if __name__ == "__main__":
         print(f"  Binary Logic:      {header.BinaryScene}")
         print(f"  Binary Logic:      {header.BinaryLogic}")
         print("Bundle unpacked successfully.")
-    # list files
     else:
         root = tk.Tk()
         app = PackUnpackApp(root)
