@@ -9,7 +9,7 @@ class UafSecureFat:
         self.root = root
         self.root.title("Secure FATs Utility")
         self.root.geometry("800x400")
-        self.root.resizable(False, False)
+        self.root.resizable(True, True)  # Allow resizing for better usability
 
         self.bundles = []
         self.files = {}
@@ -78,18 +78,34 @@ class UafSecureFat:
         self.platform_label = ttk.Label(engine_frame, text="N/A")
         self.platform_label.grid(row=2, column=1, sticky="w")
 
-    def add_bundles_thread(self):
-        thread = threading.Thread(target=self.add_bundle)
-        thread.start()
+        # Progress Label
+        self.progress_label = ttk.Label(control_frame, text="Progress: 0.00%")
+        self.progress_label.pack(side="right", padx=10)
 
-    def add_bundle(self):
+    def add_bundles_thread(self):
+        """Starts a new thread to add bundles and monitors its completion."""
         self.add_bundles_button.config(state="disabled")
         self.reload_bundles.config(state="disabled")
         self.save_fat.config(state="disabled")
+        thread = threading.Thread(target=self.add_bundle)
+        thread.start()
+        self.root.after(100, self.check_thread, thread)
+
+    def check_thread(self, thread):
+        """Checks if the thread is still running and updates the GUI accordingly."""
+        if thread.is_alive():
+            self.root.after(100, self.check_thread, thread)
+        else:
+            self.add_bundles_button.config(state="normal")
+            self.reload_bundles.config(state="normal")
+            self.save_fat.config(state="normal")
+
+    def add_bundle(self):
+        """Adds one or more bundles to the application. Each bundle is opened and its files are indexed."""
         files = filedialog.askopenfilenames(title="Select Bundle Files", filetypes=[("IPK Files", "*.ipk")])
         if files:
             try:
-                for file in files:
+                for i, file in enumerate(files):
                     if file in self.bundles:
                         messagebox.showwarning("Warning", f"Bundle {os.path.basename(file)} is already added.")
                         continue
@@ -98,40 +114,48 @@ class UafSecureFat:
                         if self.platform is None:
                             self.platform = unpacker.Header.Platform
                         elif self.platform != unpacker.Header.Platform:
-                            raise ValueError("All bundles must have the same platform.")
+                            raise ValueError(f"All bundles must have the same platform. Expected {self.platform}, found {unpacker.Header.Platform}.")
 
                         self.bundles.append(file)
                         self.files[file] = {f: StringID(f) for f in unpacker.Files}
+
+                    # Update progress
+                    self.update_progress(i + 1, len(files))
 
                 self.refresh_bundle_tree()
                 self.update_engine_info()
             except Exception as e:
                 messagebox.showerror("Error", f"Failed to load bundle: {e}")
-                raise e
         self.add_bundles_button.config(state="normal")
         self.reload_bundles.config(state="normal")
         self.save_fat.config(state="normal")
 
-    def refresh_bundle_tree(self):
-        self.bundle_tree.delete(*self.bundle_tree.get_children())
-        for index, bundle in enumerate(self.bundles):
-            bundle_id = self.bundle_tree.insert("", "end", text=os.path.basename(bundle), values=(index + 1))
-            for file, string_id in self.files[bundle].items():
+    def refresh_bundle_tree(self, new_bundle=None):
+        """Refreshes the bundle tree view. If `new_bundle` is provided, only that bundle is added."""
+        if new_bundle:
+            bundle_id = self.bundle_tree.insert("", "end", text=os.path.basename(new_bundle), values=(len(self.bundles),))
+            for file, string_id in self.files[new_bundle].items():
                 self.bundle_tree.insert(bundle_id, "end", text=file, values=(f"{string_id.GetHashCode():0x}".upper(),))
-
-        self.refresh_files_tree()
+        else:
+            self.bundle_tree.delete(*self.bundle_tree.get_children())
+            for index, bundle in enumerate(self.bundles):
+                bundle_id = self.bundle_tree.insert("", "end", text=os.path.basename(bundle), values=(index + 1))
+                for file, string_id in self.files[bundle].items():
+                    self.bundle_tree.insert(bundle_id, "end", text=file, values=(f"{string_id.GetHashCode():0x}".upper(),))
 
     def refresh_files_tree(self):
+        """Detects file collisions and informs the user."""
         file_collisions = {}
-
         for bundle, file_list in self.files.items():
             for file, string_id in file_list.items():
                 if file not in file_collisions:
                     file_collisions[file] = []
                 file_collisions[file].append((bundle, string_id))
-
+        if file_collisions:
+            messagebox.showwarning("File Collisions", f"Found {len(file_collisions)} file collisions.")
 
     def move_bundle_up(self):
+        """Moves the selected bundle up in the list."""
         selected = self.bundle_tree.selection()
         if selected:
             index = self.bundle_tree.index(selected[0])
@@ -141,6 +165,7 @@ class UafSecureFat:
                 self.bundle_tree.selection_set(self.bundle_tree.get_children()[index - 1])
 
     def move_bundle_down(self):
+        """Moves the selected bundle down in the list."""
         selected = self.bundle_tree.selection()
         if selected:
             index = self.bundle_tree.index(selected[0])
@@ -150,30 +175,30 @@ class UafSecureFat:
                 self.bundle_tree.selection_set(self.bundle_tree.get_children()[index + 1])
 
     def reload_bundle(self):
+        """Reloads the selected bundle."""
         selected = self.bundle_tree.selection()
         if selected:
             index = self.bundle_tree.index(selected[0])
             bundle = self.bundles[index]
-            try:
-                with PackFile(bundle, "r") as unpacker:
-                    self.files[bundle] = {f: StringID(f) for f in unpacker.Files}
-                self.refresh_bundle_tree()
-                messagebox.showinfo("Success", f"Bundle {os.path.basename(bundle)} reloaded successfully.")
-            except Exception as e:
-                messagebox.showerror("Error", f"Failed to reload bundle: {e}")
-                raise e
+            self.reload_bundle_files(bundle)
 
     def reload_all_bundles(self):
-        for index, bundle in enumerate(self.bundles):
-            try:
-                with PackFile(bundle, "r") as unpacker:
-                    self.files[bundle] = {f: StringID(f) for f in unpacker.Files}
-                self.refresh_bundle_tree()
-            except Exception as e:
-                messagebox.showerror("Error", f"Failed to reload bundle {os.path.basename(bundle)}: {e}")
-                raise e
-    
+        """Reloads all bundles."""
+        for bundle in self.bundles:
+            self.reload_bundle_files(bundle)
+
+    def reload_bundle_files(self, bundle):
+        """Reloads the files of a specific bundle."""
+        try:
+            with PackFile(bundle, "r") as unpacker:
+                self.files[bundle] = {f: StringID(f) for f in unpacker.Files}
+            self.refresh_bundle_tree()
+            messagebox.showinfo("Success", f"Bundle {os.path.basename(bundle)} reloaded successfully.")
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to reload bundle: {e}")
+
     def delete_bundle(self):
+        """Deletes the selected bundle."""
         selected = self.bundle_tree.selection()
         if selected:
             index = self.bundle_tree.index(selected[0])
@@ -181,6 +206,7 @@ class UafSecureFat:
             self.refresh_bundle_tree()
 
     def save_securefat(self):
+        """Saves the Secure FAT file."""
         destination = filedialog.asksaveasfilename(title="Save Secure FAT", defaultextension=".gf")
         if not destination:
             return
@@ -196,12 +222,17 @@ class UafSecureFat:
             messagebox.showinfo("Success", f"Secure FAT saved successfully to {destination}")
         except Exception as e:
             messagebox.showerror("Error", f"Failed to save Secure FAT: {e}")
-            raise e
 
     def update_engine_info(self):
+        """Updates the engine information labels."""
         self.engine_signature_label.config(text=str(Versioning.EngineSignature))
         self.engine_label.config(text=str(Versioning.Engine))
         self.platform_label.config(text=self.platform if self.platform else "N/A")
+
+    def update_progress(self, current, total):
+        """Updates the progress label."""
+        progress = (current / total) * 100
+        self.progress_label.config(text=f"Progress: {progress:.2f}%")
 
 if __name__ == "__main__":
     root = tk.Tk()
