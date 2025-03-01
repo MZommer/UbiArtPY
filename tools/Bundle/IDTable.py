@@ -105,15 +105,23 @@ class IDTableApp:
             try:
                 securefat = Fat()
                 if securefat.load(Path(securefat_path)):
-                    platform: str = simpledialog.askstring("Platform", "Please enter the securefat platform:")
+                    popup = tk.Tk()
+                    popup.withdraw()
+                    platform: str = simpledialog.askstring(
+                        "Platform",
+                        "Please enter the securefat platform:",
+                        parent=popup,
+                    )
+                    popup.destroy()
                     for bundle in securefat.bundles:
-                        file_name = f"{bundle}_{platform}"
+                        file_name = f"{bundle}_{platform.lower()}"
                         if file_name not in self.bundles:
                             self.bundles.append(file_name)
                     self.refresh_bundle_tree()
                     messagebox.showinfo("Success", "Bundles loaded from Secure FAT successfully.")
             except Exception as e:
                 messagebox.showerror("Error", f"Failed to load Secure FAT: {e}")
+                raise e
         self.progress_label.config(text="Status: Idle")
         self.progress_bar["value"] = 100
 
