@@ -1,8 +1,10 @@
-import tkinter as tk
-from tkinter import ttk, filedialog, messagebox
-from UbiArtPY import PackFile, Versioning, FatBuilder, StringID, Path
 import os
 import threading
+import tkinter as tk
+from tkinter import ttk, filedialog, messagebox
+
+from UbiArtPY import PackFile, Versioning, FatBuilder, StringID, Path
+
 
 class UafSecureFat:
     def __init__(self, root):
@@ -31,10 +33,10 @@ class UafSecureFat:
         # Controls
         self.add_bundles_button = ttk.Button(control_frame, text="Add Bundles", command=self.add_bundles_thread)
         self.add_bundles_button.pack(side="left", padx=5)
-        
+
         self.reload_bundles = ttk.Button(control_frame, text="Reload All Bundles", command=self.reload_all_bundles)
         self.reload_bundles.pack(side="left", padx=5)
-        
+
         self.save_fat = ttk.Button(control_frame, text="Save Secure FAT", command=self.save_securefat)
         self.save_fat.pack(side="left", padx=5)
 
@@ -48,7 +50,8 @@ class UafSecureFat:
         bundles_scroll.pack(side="right", fill="y")
 
         self.bundle_tree = ttk.Treeview(
-            bundles_tree_frame, columns=("Order"), show="tree", selectmode="browse", yscrollcommand=bundles_scroll.set, height=10
+            bundles_tree_frame, columns=("Order"), show="tree", selectmode="browse", yscrollcommand=bundles_scroll.set,
+            height=10
         )
         self.bundle_tree.heading("#0", text="Bundles")
         self.bundle_tree.heading("Order", text="Order")
@@ -112,12 +115,13 @@ class UafSecureFat:
 
                     with PackFile(file, "r") as unpacker:
                         if self.platform is None:
-                            self.platform = unpacker.Header.Platform
-                        elif self.platform != unpacker.Header.Platform:
-                            raise ValueError(f"All bundles must have the same platform. Expected {self.platform}, found {unpacker.Header.Platform}.")
+                            self.platform = unpacker.header.platform
+                        elif self.platform != unpacker.header.platform:
+                            raise ValueError(
+                                f"All bundles must have the same platform. Expected {self.platform}, found {unpacker.header.platform}.")
 
                         self.bundles.append(file)
-                        self.files[file] = {f: StringID(f) for f in unpacker.Files}
+                        self.files[file] = {f: StringID(f) for f in unpacker.files}
 
                     # Update progress
                     self.update_progress(i + 1, len(files))
@@ -133,15 +137,18 @@ class UafSecureFat:
     def refresh_bundle_tree(self, new_bundle=None):
         """Refreshes the bundle tree view. If `new_bundle` is provided, only that bundle is added."""
         if new_bundle:
-            bundle_id = self.bundle_tree.insert("", "end", text=os.path.basename(new_bundle), values=(len(self.bundles),))
+            bundle_id = self.bundle_tree.insert("", "end", text=os.path.basename(new_bundle),
+                                                values=(len(self.bundles),))
             for file, string_id in self.files[new_bundle].items():
-                self.bundle_tree.insert(bundle_id, "end", text=file, values=(f"{string_id.GetHashCode():0x}".upper(),))
+                self.bundle_tree.insert(bundle_id, "end", text=file,
+                                        values=(f"{string_id.get_hash_code():0x}".upper(),))
         else:
             self.bundle_tree.delete(*self.bundle_tree.get_children())
             for index, bundle in enumerate(self.bundles):
                 bundle_id = self.bundle_tree.insert("", "end", text=os.path.basename(bundle), values=(index + 1))
                 for file, string_id in self.files[bundle].items():
-                    self.bundle_tree.insert(bundle_id, "end", text=file, values=(f"{string_id.GetHashCode():0x}".upper(),))
+                    self.bundle_tree.insert(bundle_id, "end", text=file,
+                                            values=(f"{string_id.get_hash_code():0x}".upper(),))
 
     def refresh_files_tree(self):
         """Detects file collisions and informs the user."""
@@ -191,7 +198,7 @@ class UafSecureFat:
         """Reloads the files of a specific bundle."""
         try:
             with PackFile(bundle, "r") as unpacker:
-                self.files[bundle] = {f: StringID(f) for f in unpacker.Files}
+                self.files[bundle] = {f: StringID(f) for f in unpacker.files}
             self.refresh_bundle_tree()
             messagebox.showinfo("Success", f"Bundle {os.path.basename(bundle)} reloaded successfully.")
         except Exception as e:
@@ -214,9 +221,9 @@ class UafSecureFat:
         try:
             builder = FatBuilder()
             for bundle, file_list in self.files.items():
-                bundleName = Path(bundle).getBasenameWithoutExtension().rsplit("_", 1)[0]
+                bundleName = Path(bundle).get_basename_without_extension().rsplit("_", 1)[0]
                 for file in file_list:
-                    builder.referenceFile(file, bundleName)
+                    builder.reference_file(file, bundleName)
 
             builder.save(destination)
             messagebox.showinfo("Success", f"Secure FAT saved successfully to {destination}")
@@ -233,6 +240,7 @@ class UafSecureFat:
         """Updates the progress label."""
         progress = (current / total) * 100
         self.progress_label.config(text=f"Progress: {progress:.2f}%")
+
 
 if __name__ == "__main__":
     root = tk.Tk()
