@@ -13,8 +13,9 @@ from .Vec3d import Vec3d
 from .Volume import Volume
 from .__base__ import BaseTypes
 
+
 class BasicTypeList:
-    TypeList: tuple[type] =  (
+    TypeList: tuple[type] = (
         Angle,
         Color,
         ColorInteger,
@@ -29,6 +30,7 @@ class BasicTypeList:
         Vec3d,
         Volume,
     )
-    
-    def IsBaseType(_type: type) -> bool:
+
+    @staticmethod
+    def is_base_type(_type: type) -> bool:
         return _type in BasicTypeList.TypeList or _type in BaseTypes

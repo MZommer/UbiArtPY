@@ -1,29 +1,42 @@
 import struct
+
+from ..__types__ import uint32, uint16
 from ..__utils__ import InvalidFileError
 
 
 class RIFF:
+    signature: bytes
+    file_length: uint32
+    file_type: bytes
+    format_chunk_marker: bytes
+    format_tag: uint16
+    channels: uint16
+    samples_per_sec: uint32
+    avg_bytes_per_sec: uint32
+    block_align: uint16
+    bits_per_sample: uint16
+
     def __init__(self, buffer):
-        self.Signature = buffer.read(4)  # Normally RIFF (Resource Interchange File Format)
-        if self.Signature != b'RIFF':
+        self.signature = buffer.read(4)  # Normally RIFF (Resource Interchange File Format)
+        if self.signature != b'RIFF':
             raise InvalidFileError("Invalid file! File is not a RIFF!")
-        self.FileLength = struct.unpack("I", buffer.read(4))[0]
-        self.FileType = buffer.read(4)  # Normally Wave
-        self.FormatChunkMarker = buffer.read(4)  # Normally fmt
-        formatDataLength = struct.unpack("I", buffer.read(4))[0]
-        self.FormatTag = struct.unpack("H", buffer.read(2))[0]  # Waveform-audio format type.
-        self.Channels = struct.unpack("H", buffer.read(2))[0]  # Number of channels in the waveform-audio data.
-        self.SamplesPerSec = struct.unpack("I", buffer.read(4))[0]  # Sample rate, in samples per second (hertz).
-        self.AvgBytesPerSec = struct.unpack("I", buffer.read(4))[0]  # Block alignment, in bytes.
+        self.file_length = struct.unpack("I", buffer.read(4))[0]
+        self.file_type = buffer.read(4)  # Normally Wave
+        self.format_chunk_marker = buffer.read(4)  # Normally fmt
+        format_data_length = struct.unpack("I", buffer.read(4))[0]
+        self.format_tag = struct.unpack("H", buffer.read(2))[0]  # Waveform-audio format type.
+        self.channels = struct.unpack("H", buffer.read(2))[0]  # Number of channels in the waveform-audio data.
+        self.samples_per_sec = struct.unpack("I", buffer.read(4))[0]  # Sample rate, in samples per second (hertz).
+        self.avg_bytes_per_sec = struct.unpack("I", buffer.read(4))[0]  # Block alignment, in bytes.
         # The block alignment is the minimum atomic unit of data for the FormatTag format type.
         # (Sample Rate * BitsPerSample * Channels) / 8
-        self.BlockAlign = struct.unpack("H", buffer.read(2))[0]
+        self.block_align = struct.unpack("H", buffer.read(2))[0]
         # (BitsPerSample * Channels) / 8.1 Bytes per Sample Frame
-        self.BitsPerSample = struct.unpack("H", buffer.read(2))[0]
-        if self.FormatTag == 358:  # XMA2
+        self.bits_per_sample = struct.unpack("H", buffer.read(2))[0]
+        if self.format_tag == 358:  # XMA2
             self.cbSize = struct.unpack("H", buffer.read(2))[0]  # Size of extra format information.
             self.NumStreams = struct.unpack("H", buffer.read(2))[0]  # Number of audio streams.
-            # All streams have two channels, with the exception of the last stream,
+            # All streams have two channels, except the last stream,
             # which has one channel if the source file's total channel count is odd.
             self.ChannelMask = struct.unpack("I", buffer.read(4))[0]  # Spatial positions of the channels in this file.
             self.SamplesEncoded = struct.unpack("I", buffer.read(4))[0]
@@ -47,7 +60,7 @@ class RIFF:
             self.SeekChunkMarker = buffer.read(4)
             self.seekTableLength = struct.unpack("I", buffer.read(4))[0]
             self.SeekTable = buffer.read(self.seekTableLength)
-        elif self.FormatTag == 1:
+        elif self.format_tag == 1:
             buffer.read(4)  # Normally LIST
             # just skip this data we don't use (INFOISFT, Lavf58.76.100)?
             buffer.read(struct.unpack("I", buffer.read(4))[0])

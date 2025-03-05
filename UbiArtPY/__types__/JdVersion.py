@@ -1,53 +1,59 @@
 from dataclasses import dataclass
+from typing import SupportsInt
+
 
 @dataclass(frozen=True)
 class JdVersion:
-    Number: int
-    Name: str
-    ShortName: str
+    number: int
+    name: str
+    alias: str
 
     def __str__(self):
-        return self.ShortName
+        return self.alias
+
     def __int__(self):
-        return self.Number
+        return self.number
 
 
 # All JD Versions
-Jd1 = JdVersion(Name = "Just Dance", ShortName = "JD1", Number = 1)
-Jd2 = JdVersion(Name = "Just Dance 2", ShortName = "JD2", Number = 2)
-Jd3 = JdVersion(Name = "Just Dance 3", ShortName = "JD3", Number = 3)
-Jd4 = JdVersion(Name = "Just Dance 4", ShortName = "JD4", Number = 4)
-Jd2014 = JdVersion(Name = "Just Dance 2014", ShortName = "JD2014", Number = 2014)
-Jd2015 = JdVersion(Name = "Just Dance 2015", ShortName = "JD2015", Number = 2015)
-Jd2016 = JdVersion(Name = "Just Dance 2016", ShortName = "JD2016", Number = 2016)
-Jd2017 = JdVersion(Name = "Just Dance 2017", ShortName = "JD2017", Number = 2017)
-Jd2018 = JdVersion(Name = "Just Dance 2018", ShortName = "JD2018", Number = 2018)
-Jd2019 = JdVersion(Name = "Just Dance 2019", ShortName = "JD2019", Number = 2019)
-Jd2020 = JdVersion(Name = "Just Dance 2020", ShortName = "JD2020", Number = 2020)
-Jd2021 = JdVersion(Name = "Just Dance 2021", ShortName = "JD2021", Number = 2021)
-Jd2022 = JdVersion(Name = "Just Dance 2022", ShortName = "JD2022", Number = 2022)
-JdNext = JdVersion(Name = "Just Dance Next", ShortName = "JDNEXT", Number = 3333)
-JdUnlimited = JdVersion(Name = "Just Dance Unlimited", ShortName = "JDU", Number = 9999)
-JdKids = JdVersion(Name = "Just Dance Kids", ShortName = "Kids", Number = 123)
-JdAbba = JdVersion(Name = "ABBA: You Can Dance", ShortName = "ABBA", Number = 4884)
-JdIgnored = JdVersion(Name = "Ignored", ShortName = "Ignored", Number = 100)
-JdInvalid = JdVersion(Name = "Invalid", ShortName = "Invalid", Number = 0)
+Jd1 = JdVersion(name="Just Dance", alias="JD1", number=1)
+Jd2 = JdVersion(name="Just Dance 2", alias="JD2", number=2)
+Jd3 = JdVersion(name="Just Dance 3", alias="JD3", number=3)
+Jd4 = JdVersion(name="Just Dance 4", alias="JD4", number=4)
+Jd2014 = JdVersion(name="Just Dance 2014", alias="JD2014", number=2014)
+Jd2015 = JdVersion(name="Just Dance 2015", alias="JD2015", number=2015)
+Jd2016 = JdVersion(name="Just Dance 2016", alias="JD2016", number=2016)
+Jd2017 = JdVersion(name="Just Dance 2017", alias="JD2017", number=2017)
+Jd2018 = JdVersion(name="Just Dance 2018", alias="JD2018", number=2018)
+Jd2019 = JdVersion(name="Just Dance 2019", alias="JD2019", number=2019)
+Jd2020 = JdVersion(name="Just Dance 2020", alias="JD2020", number=2020)
+Jd2021 = JdVersion(name="Just Dance 2021", alias="JD2021", number=2021)
+Jd2022 = JdVersion(name="Just Dance 2022", alias="JD2022", number=2022)
+JdNext = JdVersion(name="Just Dance Next", alias="JDNEXT", number=3333)
+JdUnlimited = JdVersion(name="Just Dance Unlimited", alias="JDU", number=9999)
+JdKids = JdVersion(name="Just Dance Kids", alias="Kids", number=123)
+JdAbba = JdVersion(name="ABBA: You Can Dance", alias="ABBA", number=4884)
+JdIgnored = JdVersion(name="Ignored", alias="Ignored", number=100)
+JdInvalid = JdVersion(name="Invalid", alias="Invalid", number=0)
 All = Jd1, Jd2, Jd3, Jd4, Jd2014, Jd2015, Jd2016, Jd2017, Jd2018, Jd2019, Jd2020, Jd2021, Jd2022, JdUnlimited, JdKids, JdAbba, JdIgnored, JdInvalid
 
-def FromNumber(number):
+
+def from_number(number: SupportsInt) -> JdVersion:
     for ver in All:
-        if ver.Number == number:
+        if ver.number == number:
             return ver
     return JdInvalid
 
-def FromShortName(shortname):
+
+def from_short_name(shortname: str) -> JdVersion:
     for ver in All:
-        if ver.ShortName == shortname:
+        if ver.alias == shortname:
             return ver
     return JdInvalid
 
-def FromName(name):
+
+def from_name(name: str) -> JdVersion:
     for ver in All:
-        if ver.Name == name:
+        if ver.name == name:
             return ver
     return JdInvalid

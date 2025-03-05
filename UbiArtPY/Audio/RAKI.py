@@ -1,9 +1,10 @@
 import os
 from datetime import timedelta
 from math import ceil
-from ..__utils__ import system, useTemp, InvalidFileError
+
 from .DSP import *
 from .RIFF import *
+from ..__utils__ import system, use_temp
 
 
 class RAKI:
@@ -137,7 +138,7 @@ class RAKI:
             data = opus.read()
             dataSize = opus.tell()
 
-        raki.write(wave.FormatChunkMarker)
+        raki.write(wave.format_chunk_marker)
         raki.write(struct.pack("I", 68))  # Chunk Offset
         raki.write(struct.pack("I", 16))  # Chunk Length
 
@@ -150,13 +151,13 @@ class RAKI:
         raki.write(struct.pack("I", dataSize))  # Data Length
 
         raki.write(struct.pack("H", 0x63))
-        raki.write(struct.pack("H", wave.Channels))
-        raki.write(struct.pack("I", wave.SamplesPerSec))
-        raki.write(struct.pack("I", wave.AvgBytesPerSec))
-        raki.write(struct.pack("H", wave.BlockAlign))
-        raki.write(struct.pack("H", wave.BitsPerSample))
+        raki.write(struct.pack("H", wave.channels))
+        raki.write(struct.pack("I", wave.samples_per_sec))
+        raki.write(struct.pack("I", wave.avg_bytes_per_sec))
+        raki.write(struct.pack("H", wave.block_align))
+        raki.write(struct.pack("H", wave.bits_per_sample))
         raki.write(struct.pack("I",
-                               int(wave.DataLength / (wave.Channels * wave.BitsPerSample / 8))))
+                               int(wave.DataLength / (wave.channels * wave.bits_per_sample / 8))))
         # Gets the number of samples
 
         raki.write(data)
@@ -170,7 +171,7 @@ class RAKI:
         # Hard codded
         self.__CookRAKIHeader(raki)
         wave = RIFF(open("/temp/temp.wav", "rb"))
-        raki.write(wave.FormatChunkMarker)
+        raki.write(wave.format_chunk_marker)
         raki.write(struct.pack("I", 56))  # Chunk Offset
         raki.write(struct.pack("I", 12))  # Chunk Length
 
@@ -178,12 +179,12 @@ class RAKI:
         raki.write(struct.pack("I", 72))  # Chunk Offset
         raki.write(struct.pack("I", wave.DataLength))  # Data Length
 
-        raki.write(struct.pack("H", wave.FormatTag))
-        raki.write(struct.pack("H", wave.Channels))
-        raki.write(struct.pack("I", wave.SamplesPerSec))
-        raki.write(struct.pack("I", wave.AvgBytesPerSec))
-        raki.write(struct.pack("H", wave.BlockAlign))
-        raki.write(struct.pack("H", wave.BitsPerSample))
+        raki.write(struct.pack("H", wave.format_tag))
+        raki.write(struct.pack("H", wave.channels))
+        raki.write(struct.pack("I", wave.samples_per_sec))
+        raki.write(struct.pack("I", wave.avg_bytes_per_sec))
+        raki.write(struct.pack("H", wave.block_align))
+        raki.write(struct.pack("H", wave.bits_per_sample))
 
         raki.write(wave.Data)
 
@@ -208,11 +209,11 @@ class RAKI:
         raki.write(struct.pack(">I", len(data)))  # Data Length
 
         raki.write(struct.pack(">H", 0x55))  # Format flag hardcoded
-        raki.write(struct.pack(">H", wave.Channels))
-        raki.write(struct.pack(">I", wave.SamplesPerSec))
-        raki.write(struct.pack(">I", wave.AvgBytesPerSec))
-        raki.write(struct.pack(">H", wave.BlockAlign))
-        raki.write(struct.pack(">H", wave.BitsPerSample))
+        raki.write(struct.pack(">H", wave.channels))
+        raki.write(struct.pack(">I", wave.samples_per_sec))
+        raki.write(struct.pack(">I", wave.avg_bytes_per_sec))
+        raki.write(struct.pack(">H", wave.block_align))
+        raki.write(struct.pack(">H", wave.bits_per_sample))
         raki.write(b"\x00" * 56)
         # spacing? if deleted the game will not read it properly
 
@@ -233,7 +234,7 @@ class RAKI:
         # Hard codded
         self.__CookRAKIHeader(raki)
 
-        raki.write(xma2.FormatChunkMarker)
+        raki.write(xma2.format_chunk_marker)
         raki.write(struct.pack(">I", 68))  # Chunk Offset
         raki.write(struct.pack(">I", 52))  # Chunk Length
 
@@ -244,12 +245,12 @@ class RAKI:
         raki.write(xma2.DataChunkMarker)
         raki.write(struct.pack(">I", dataOffsetSpaced))  # Chunk Offset
         raki.write(struct.pack(">I", xma2.DataLength))  # Data Length
-        raki.write(struct.pack(">H", xma2.FormatTag))
-        raki.write(struct.pack(">H", xma2.Channels))
-        raki.write(struct.pack(">I", xma2.SamplesPerSec))
-        raki.write(struct.pack(">I", xma2.AvgBytesPerSec))
-        raki.write(struct.pack(">H", xma2.BlockAlign))
-        raki.write(struct.pack(">H", xma2.BitsPerSample))
+        raki.write(struct.pack(">H", xma2.format_tag))
+        raki.write(struct.pack(">H", xma2.channels))
+        raki.write(struct.pack(">I", xma2.samples_per_sec))
+        raki.write(struct.pack(">I", xma2.avg_bytes_per_sec))
+        raki.write(struct.pack(">H", xma2.block_align))
+        raki.write(struct.pack(">H", xma2.bits_per_sample))
         raki.write(struct.pack(">H", xma2.cbSize))
         raki.write(struct.pack(">H", xma2.NumStreams))
         raki.write(struct.pack(">I", xma2.ChannelMask))
@@ -305,10 +306,10 @@ class RAKI:
             raki.write(struct.pack(">I", 0x60))  # dspR chunk size
             raki.write(b"datL")
             raki.write(struct.pack(">I", 0x140))  # datL chunk offset
-            raki.write(struct.pack(">I", len(dsp_left.Data)))  # datL chunk size
+            raki.write(struct.pack(">I", len(dsp_left.data)))  # datL chunk size
             raki.write(b"datR")
-            raki.write(struct.pack(">I", 0x140 + len(dsp_left.Data) + 0x10))  # datR chunk offset
-            raki.write(struct.pack(">I", len(dsp_right.Data)))  # datR chunk size
+            raki.write(struct.pack(">I", 0x140 + len(dsp_left.data) + 0x10))  # datR chunk offset
+            raki.write(struct.pack(">I", len(dsp_right.data)))  # datR chunk size
         else:
             raki.write(b"dspL")
             raki.write(struct.pack(">I", 0x62))  # dspL chunk offset
@@ -318,25 +319,28 @@ class RAKI:
             raki.write(struct.pack(">I", 0x60))  # dspR chunk size
             raki.write(b"datS")
             raki.write(struct.pack(">I", 0x140))  # datS chunk offset
-            raki.write(struct.pack(">I", len(dsp_left.Data) + len(dsp_right.Data)))  # datS chunk size
+            raki.write(struct.pack(">I", len(dsp_left.data) + len(dsp_right.data)))  # datS chunk size
 
         # Data
         # fmt data
         raki.write(struct.pack(">H", 2))  # format
         raki.write(struct.pack(">H", 2))  # channels
-        raki.write(struct.pack(">I", wav_left.BitsPerSample))  # frequency
-        raki.write(struct.pack(">I", int(wav_left.BitsPerSample * 2 * 16 / 16)))  # byterate
+        raki.write(struct.pack(">I", wav_left.bits_per_sample))  # frequency
+        raki.write(struct.pack(">I", int(wav_left.bits_per_sample * 2 * 16 / 16)))  # byterate
         raki.write(struct.pack(">H", int(2 * 16 / 16)))  # blockalign
         raki.write(struct.pack(">H", 16))  # bitspersample
         raki.write(struct.pack(">H", 0))  # padding
         # left coeff
-        raki.write(dsp_left.Coefficients)
+        raki.write(dsp_left.coefficients)
         # right coeff
-        raki.write(dsp_right.Coefficients)
+        raki.write(dsp_right.coefficients)
         # padding
         raki.write(b"\x00" * 30)
 
-    @useTemp
+    def __CookMSADPCM(self, raki):
+        raise NotImplemented
+
+    @use_temp
     def Cook(self, file, output, platform, isAMB=False, Format=None):
         platform = platform.upper()
         self.isAMB = isAMB
@@ -363,7 +367,7 @@ class RAKI:
                 self.__CookDSP(raki)  # Format is "adpc" cause the dsp data is in adpcm
             elif self.Format == b"msadpcm":
                 self.__CookMSADPCM(raki)
-        os.remove("/temp/temp.wav")
+        os.remove(file)
 
     @staticmethod
     def Parse(path):
@@ -390,7 +394,7 @@ class RAKI:
         system(f'vgmstream -o {output} {file}')
 
     @staticmethod
-    @useTemp
+    @use_temp
     def UnCookAndCook(file, output, platform):
         RAKI.UnCook(file, "/temp/uncooktemp.wav")
         inRAKI = RAKI.Parse(file)

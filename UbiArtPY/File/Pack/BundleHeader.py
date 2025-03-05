@@ -1,60 +1,64 @@
+from ...Core import ArchiveMemory, Versioning, serializable_class
 from ...__types__ import uint32, Platform, Platforms
-from ...Core import ArchiveMemory, Versioning, SerializableClass
 
-PACK_MAGICNUMBER: uint32 = uint32(0x50EC12BA)
+PACK_MAGIC_NUMBER = uint32(0x50EC12BA)
 
-@SerializableClass
+
+@serializable_class
 class BundleHeader:
-    MagicNumber: uint32
-    Version: uint32
-    PlatformSupported: uint32
-    FilesStart: uint32
-    FilesCount: uint32
-    Compressed: bool
-    BinaryScene: bool
-    BinaryLogic: bool
-    DataSignature: uint32 # data version 0x00
-    EngineSignature: uint32
-    EngineVersion: uint32
+    magic_number: uint32
+    version: uint32
+    platform_supported: uint32
+    files_start: uint32
+    files_count: uint32
+    compressed: bool
+    binary_scene: bool
+    binary_logic: bool
+    data_signature: uint32  # data version 0x00
+    engine_signature: uint32
+    engine_version: uint32
+
     # File header count u32
     # Platform: Platform
 
     def __init__(self, platform: Platform, binary: bool = False, data_version: uint32 = uint32()) -> None:
-        self.MagicNumber = uint32(PACK_MAGICNUMBER)
-        self.Version = uint32(Versioning.Bundle)
-        self.Platform = platform
-        self.PlatformSupported = uint32(platform.Id)
-        self.FilesStart = uint32(0)
-        self.FilesCount = uint32(0)
-        self.Compressed = False
-        self.BinaryScene = binary
-        self.BinaryLogic = binary
-        self.DataSignature = uint32(data_version)
-        self.EngineSignature = uint32(Versioning.EngineSignature)
-        self.EngineVersion = uint32(Versioning.Engine) # TODO: make enviroment funcs
-    
+        self.magic_number = uint32(PACK_MAGIC_NUMBER)
+        self.version = uint32(Versioning.Bundle)
+        self.platform = platform
+        self.platform_supported = uint32(platform.id)
+        self.files_start = uint32(0)
+        self.files_count = uint32(0)
+        self.compressed = False
+        self.binary_scene = binary
+        self.binary_logic = binary
+        self.data_signature = uint32(data_version)
+        self.engine_signature = uint32(Versioning.EngineSignature)
+        self.engine_version = uint32(Versioning.Engine)  # TODO: make environment funcs
+
     def __repr__(self):
-        return f"BundleHeader({self.Version}, {self.Platform}, {self.Compressed}, {self.EngineSignature}, {self.EngineVersion})"
-    
+        return f"BundleHeader({self.version}, {self.platform}, {self.compressed}, {self.engine_signature}, {self.engine_version})"
+
     def serialize(self, am: ArchiveMemory) -> None:
-        self.MagicNumber = am.serialize(self.MagicNumber)
-        assert self.MagicNumber == PACK_MAGICNUMBER, "Invalid magic! Not an IPK file."
-        self.Version = am.serialize(self.Version)
-        # assert self.Version == Versioning.Bundle, "Invalid bundle version! Make sure the enviroment is properly set."
-        self.PlatformSupported = am.serialize(self.PlatformSupported)
-        if am.isReading():
-            self.Platform = Platforms.GetPlatformFromId(self.PlatformSupported)
-            assert self.Platform != Platforms.INVALID, "Invalid platform!"
-        self.FilesStart = am.serialize(self.FilesStart)
-        self.FilesCount = am.serialize(self.FilesCount)
-        self.Compressed = am.serialize(uint32(self.Compressed))
-        self.BinaryScene = am.serialize(uint32(self.BinaryScene))
-        self.BinaryLogic = am.serialize(uint32(self.BinaryLogic))
-        self.DataSignature = am.serialize(self.DataSignature)
-        self.EngineSignature = am.serialize(self.EngineSignature)
-        self.EngineVersion = am.serialize(self.EngineVersion)
-        Versioning.Engine = self.EngineVersion
-        Versioning.EngineSignature = self.EngineSignature
-    
-    def compute_size(self) -> uint32:
-        return uint32(44) # uint32 + uint32 + uint32 + uint32 + uint32 + uint32 + uint32 + uint32 + uint32 + uint32 + uint32
+        self.magic_number = am.serialize(self.magic_number)
+        assert self.magic_number == PACK_MAGIC_NUMBER, "Invalid magic! Not an IPK file."
+        self.version = am.serialize(self.version)
+        # assert self.Version == Versioning.Bundle, "Invalid bundle version! Make sure the environment is properly set."
+        self.platform_supported = am.serialize(self.platform_supported)
+        if am.is_reading():
+            self.platform = Platforms.get_platform_from_id(self.platform_supported)
+            assert self.platform != Platforms.INVALID, "Invalid platform!"
+        self.files_start = am.serialize(self.files_start)
+        self.files_count = am.serialize(self.files_count)
+        self.compressed = am.serialize(uint32(self.compressed))
+        self.binary_scene = am.serialize(uint32(self.binary_scene))
+        self.binary_logic = am.serialize(uint32(self.binary_logic))
+        self.data_signature = am.serialize(self.data_signature)
+        self.engine_signature = am.serialize(self.engine_signature)
+        self.engine_version = am.serialize(self.engine_version)
+        Versioning.Engine = self.engine_version
+        Versioning.EngineSignature = self.engine_signature
+
+    @staticmethod
+    def compute_size() -> uint32:
+        return uint32(44)
+        # uint32 + uint32 + uint32 + uint32 + uint32 + uint32 + uint32 + uint32 + uint32 + uint32 + uint32

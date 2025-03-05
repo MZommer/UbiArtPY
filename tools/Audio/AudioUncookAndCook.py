@@ -1,4 +1,5 @@
 import os
+
 from UbiArtPY import RAKI
 
 PLATFORM = "PC"
@@ -11,5 +12,3 @@ for file in os.listdir("input"):
     if os.path.isfile(f"input/{file}"):
         print(f"Converting {file} folder to {PLATFORM=}")
         RAKI.UnCookAndCook(f"input/{file}", f"output/{file}", PLATFORM)
-
-

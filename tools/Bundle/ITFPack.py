@@ -166,7 +166,7 @@ class PackUnpackApp:
             self.unpack_destination_entry.delete(0, tk.END)
             self.unpack_destination_entry.insert(0, folder)
 
-    def update_versions(self, event=None):
+    def update_versions(self, *_):
         """Updates the JD version dropdown based on the selected platform."""
         platform_name = self.platform_var.get()
         platform = next((p for p in PLATFORMS if p.name == platform_name), None)
@@ -282,7 +282,7 @@ if __name__ == "__main__":
 
     if args.pack:
         platform = next((p for p in PLATFORMS if p.name == args.platform.upper()), None)
-        jd_version = next((v for v in JdVersion.All if v.Number == args.game), None)
+        jd_version = next((v for v in JdVersion.All if v.number == args.game), None)
         if not platform or not jd_version:
             print("Invalid platform or game version selected.")
             exit(1)

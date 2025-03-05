@@ -1,8 +1,10 @@
 from dataclasses import dataclass
-from .Path import Path
+
 from .LocalisationId import LocalisationId
+from .Path import Path
+
 
 @dataclass
 class LocalizedPath:
-    LocID: LocalisationId
-    DefaultPath: Path
+    loc_id: LocalisationId
+    default_path: Path

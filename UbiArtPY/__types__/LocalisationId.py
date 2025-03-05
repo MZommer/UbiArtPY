@@ -1,16 +1,21 @@
 from dataclasses import dataclass
 
+from .__base__ import uint32
+
+
 @dataclass(frozen=True)
 class LocalisationId:
-    LocId: int = 0xffffffff
-    
+    loc_id: uint32 = 0xffffffff
+
     def __str__(self) -> str:
-        return str(self.LocId)
+        return str(self.loc_id)
+
     def __int__(self) -> int:
-        return self.LocId
+        return int(self.loc_id)
+
     def __eq__(self, __value: object) -> bool:
         if isinstance(__value, LocalisationId):
-            return __value.LocId == self.LocId
+            return __value.loc_id == self.loc_id
         if isinstance(__value, int):
-            return __value == self.LocId
+            return __value == self.loc_id
         return False

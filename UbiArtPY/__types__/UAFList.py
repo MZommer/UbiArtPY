@@ -1,37 +1,35 @@
-from typing import Callable
-from .UAFCollection import UAFCollection
-from typing import TypeVar, Generic, Iterable
 from functools import singledispatchmethod
+from typing import Callable
+from typing import TypeVar, Generic, Iterable, Optional, Any
+
+from .UAFCollection import UAFCollection
 
 T = TypeVar('T')
 
-class UAFList(UAFCollection, Generic[T]):
-    
+
+class UAFList(UAFCollection[T], Generic[T]):
     @singledispatchmethod
-    def __init__(self, values, t) -> None:
+    def __init__(self, values: Iterable[T]):
         super().__init__()
-        if isinstance(values, UAFCollection): 
+        if isinstance(values, UAFCollection):
             self.SerializableElements = values.SerializableElements
-            self.ElementType = values.ElementType
+            self.element_type = values.element_type
         else:
             for value in values:
-                self.Add(value)
-            self.ElementType = t or type(value) # expecting that all the list has the same type inside.
-    
-    
+                self.add(value)
+
     @__init__.register
-    def _(self) -> None:
+    def _(self):
         raise AttributeError("UAFList must be initialized with a type or a list of values")
-    
+
     @__init__.register
-    def _(self, T: type) -> None:
+    def _(self, element_type: type):
         super().__init__()
-        self.ElementType = T
-    
-    
+        self.element_type = element_type
+
     def __str__(self) -> str:
-        return f'{self.Count} {self.ElementType.__name__}{"s" if self.Count > 1 else ""}'
-    
+        return f'{self.count} {self.element_type}{"s" if self.count > 1 else ""}'
+
     def __getitem__(self, index):
         if isinstance(index, int):
             return self.SerializableElements[index]
@@ -40,46 +38,42 @@ class UAFList(UAFCollection, Generic[T]):
 
     def __setitem__(self, index, value):
         if isinstance(index, int):
-            if isinstance(value, self.ElementType):
+            if isinstance(value, self.element_type):
                 self.SerializableElements[index] = value
             else:
-                raise TypeError(f"Value must be of type {self.ElementType.__name__}")
+                raise TypeError(f"Value must be of type {self.element_type.__name__}")
         else:
             raise TypeError("Index must be an integer")
-    
-    def pop(self, index):
+
+    def pop(self, index: int = -1):
         if isinstance(index, int):
             return self.SerializableElements.pop(index)
         else:
             raise TypeError("Index must be an integer")
-    
+
     def remove(self, value):
         self.SerializableElements.remove(value)
-    
-    def append(self, value):
-        self.Add(value)
-    
-    def insert(self, index, value):
-        if not isinstance(value, self.ElementType):
-            raise TypeError(f"Value must be of type {self.ElementType.__name__}")
-        
-        if isinstance(index, int):
-            self.SerializableElements.insert(index, value)
-        else:
+
+    def append(self, value: T):
+        if not isinstance(value, self.element_type):
+            raise TypeError(f"Value must be of type {self.element_type.__name__}")
+        self.add(value)
+
+    def insert(self, index: int, value: T):
+        if not isinstance(value, self.element_type):
+            raise TypeError(f"Value must be of type {self.element_type.__name__}")
+        if not isinstance(index, int):
             raise TypeError("Index must be an integer")
-    
-    def extend(self, values: Iterable):
+        self.SerializableElements.insert(index, value)
+
+    def extend(self, values: Iterable[T]):
         for value in values:
-            if isinstance(value, self.ElementType):
-                self.Add(value)
-            else:
-                raise TypeError("Value must be of type {self.ElementType.__name__}")
-    
+            if not isinstance(value, self.element_type):
+                raise TypeError(f"Value must be of type {self.element_type.__name__}")
+            self.add(value)
+
     def reverse(self):
         self.SerializableElements.reverse()
-    
-    def sort(self, reverse: bool = False, key: Callable = None):
-        self.SerializableElements.sort(reverse=reverse, key=key)
 
-    def pop(self, index: int = -1):
-        return self.SerializableElements.pop(index)
+    def sort(self, reverse: bool = False, key: Optional[Callable[[T], Any]] = None):
+        self.SerializableElements.sort(reverse=reverse, key=key)

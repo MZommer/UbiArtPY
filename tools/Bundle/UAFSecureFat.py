@@ -50,7 +50,7 @@ class UafSecureFat:
         bundles_scroll.pack(side="right", fill="y")
 
         self.bundle_tree = ttk.Treeview(
-            bundles_tree_frame, columns=("Order"), show="tree", selectmode="browse", yscrollcommand=bundles_scroll.set,
+            bundles_tree_frame, columns="Order", show="tree", selectmode="browse", yscrollcommand=bundles_scroll.set,
             height=10
         )
         self.bundle_tree.heading("#0", text="Bundles")
@@ -221,9 +221,9 @@ class UafSecureFat:
         try:
             builder = FatBuilder()
             for bundle, file_list in self.files.items():
-                bundleName = Path(bundle).get_basename_without_extension().rsplit("_", 1)[0]
+                bundle_name = Path(bundle).get_basename_without_extension().rsplit("_", 1)[0]
                 for file in file_list:
-                    builder.reference_file(file, bundleName)
+                    builder.reference_file(file, bundle_name)
 
             builder.save(destination)
             messagebox.showinfo("Success", f"Secure FAT saved successfully to {destination}")

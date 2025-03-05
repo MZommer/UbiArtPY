@@ -1,5 +1,6 @@
-from .FatConst import FILE_SIGNATURE, FILE_VERSION
-from .FatConst import IndexToBundleIdsArray_Mask
+from typing import List
+
+from .FatConst import FILE_SIGNATURE, FILE_VERSION, IndexToBundleIdsArray_Mask
 from .__types__ import BundleTOC, BundleIds, FileLink, FileLinks
 from ...Core import ArchiveMemory
 from ...__types__ import StringID, Path, String8, uint8, uint32
@@ -47,7 +48,7 @@ class BundleIDsExtractor:
     def get_size(self) -> int:
         return len(self.bundle_ids)
 
-    def get_id(self, index: int) -> uint8:
+    def get_id(self, index: int) -> List[uint8]:
         return self.bundle_ids[uint32(index)]
 
 

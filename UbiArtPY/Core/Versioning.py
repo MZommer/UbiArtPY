@@ -1,5 +1,6 @@
 from ..__types__ import uint32, Platform, JdVersion
 
+
 class Versioning:
     EngineSignature = uint32(490359856)
     Engine = uint32(253653)
@@ -23,11 +24,11 @@ class Versioning:
     DashMPD = uint32(1)
 
     @staticmethod
-    def set_game(jdver: JdVersion, platform: Platform):
-        if jdver == JdVersion.Jd2014:
+    def set_game(jd_ver: JdVersion, platform: Platform):
+        if jd_ver == JdVersion.Jd2014:
             Versioning.EngineSignature = uint32(3883161868)
             Versioning.Engine = uint32(109470)
-        elif jdver == JdVersion.Jd2015:
+        elif jd_ver == JdVersion.Jd2015:
             pass
-        if jdver == JdVersion.Jd2016:
+        if jd_ver == JdVersion.Jd2016:
             pass

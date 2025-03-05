@@ -1,17 +1,19 @@
-from ...__types__ import uint32, uint64, Path
-from ...Core import ArchiveMemory, SerializableClass
-from typing import Iterator
+from typing import Iterator, Optional
 
-@SerializableClass
+from ...Core import ArchiveMemory, serializable_class
+from ...__types__ import uint32, uint64, Path
+
+
+@serializable_class
 class FileHeader:
     # Count: uint32
-    OriginalSize: uint32
-    CompressedSize: uint32
-    FlushTime: uint64  # date
-    Positions: list[uint64]
-    Position: uint64
-    FilePath: Path
-    
+    original_size: uint32
+    compressed_size: uint32
+    flush_time: uint64  # date
+    positions: list[uint64]
+    position: uint64
+    file_path: Path
+
     """
     Position vs Positions in FileHeader
     =================================
@@ -47,102 +49,112 @@ class FileHeader:
             -> Same data stored at all three offsets
             -> Reader picks closest position to current file pointer
     """
-    
-    def __init__(self, original_size: uint32 = 0, compressed_size: uint32 = 0, flush_time: uint64 = 0, itf_path: Path = Path("")) -> None:
+
+    def __init__(
+            self,
+            original_size: uint32 = 0,
+            compressed_size: uint32 = 0,
+            flush_time: uint64 = 0,
+            itf_path: Path = Path.empty_path()
+    ) -> None:
         """
-        Args:
+        Arguments:
             original_size (uint32, optional): Original file size. Defaults to 0.
             compressed_size (uint32, optional): Compressed file size if not compressed, 0. Defaults to 0.
-            flush_time (uint64, optional): File time. uint64 that represents the number of 100-nanosecond intervals that have elapsed since 12:00 A.M. January 1, 1601 Coordinated Universal Time (UTC). Defaults to 0.
+            flush_time (uint64, optional): File time. uint64 that represents the number of 100-nanosecond intervals that have elapsed since 12:00 A.M. January 1, 1601, Coordinated Universal Time (UTC). Defaults to 0.
             itf_path (Path, optional): File path inside the bundle.
         """
-        self.OriginalSize = uint32(original_size)
-        self.CompressedSize = uint32(compressed_size)
-        self.FlushTime = uint64(flush_time)
-        self.Position = uint64()
-        self.Positions = [self.Position]
-        self.FilePath = Path(itf_path)
-    
+        self.original_size = uint32(original_size)
+        self.compressed_size = uint32(compressed_size)
+        self.flush_time = uint64(flush_time)
+        self.position = uint64()
+        self.positions = [self.position]
+        self.file_path = Path(itf_path)
+
     def __repr__(self):
-        return f"FileHeader(OriginalSize={self.OriginalSize}, CompressedSize={self.CompressedSize}, FlushTime={self.FlushTime}, Positions={self.Positions}, Position={self.Position}, FilePath={self.FilePath})"
-    
+        return f"FileHeader(original_size={self.original_size}, compressed_size={self.compressed_size}, flush_time={self.flush_time}, positions={self.positions}, position={self.position}, file_path={self.file_path})"
+
     @property
-    def Count(self) -> uint32:
-        return uint32(len(self.Positions))
-    
+    def count(self) -> uint32:
+        return uint32(len(self.positions))
+
     def set_position(self, position: uint64) -> None:
-        self.Positions.append(position)
-    
+        self.positions.append(position)
+
     def get_position(self, index: uint32) -> uint64:
-        return self.Positions[index]
-    
+        return self.positions[index]
+
     def compute_size(self) -> uint32:
-        return uint32(4 + 4 + 4 + 8 + (8 * self.Count) + self.FilePath.getSerializeSize())
+        return uint32(4 + 4 + 4 + 8 + (8 * self.count) + self.file_path.get_serialize_size())
         # sizeof(Count) + sizeof(OriginalSize) + sizeof(CompressedSize) + sizeof(FlushTime) + sizeof(Position) * Count + path.getSerializeSize
 
     def serialize(self, am: ArchiveMemory) -> None:
-        count = am.serialize(self.Count)
+        count = am.serialize(self.count)
         # Assert count is within valid range (4-bit value)
         assert count <= ((1 << 4) - 1), "Value overflow, position count over the valid range (4-bit value)!"
-        self.OriginalSize = am.serialize(self.OriginalSize)
-        self.CompressedSize = am.serialize(self.CompressedSize)
+        self.original_size = am.serialize(self.original_size)
+        self.compressed_size = am.serialize(self.compressed_size)
         # Assert compressed size is within valid range (28-bit value)
-        assert self.CompressedSize <= ((1 << 28) - 1), "Value overflow, CompressedSize over the valid range (28-bit value)!"
-        self.FlushTime = am.serialize(self.FlushTime)
-        
-        if am.isReading():
+        assert (
+            self.compressed_size <= ((1 << 28) - 1),
+            "Value overflow, CompressedSize over the valid range (28-bit value)!"
+        )
+        self.flush_time = am.serialize(self.flush_time)
+
+        if am.is_reading():
             # Assert count is valid before allocating positions array
             assert count >= 1, "Invalid positions count, should be at least 1!"
-            
+
             if count > 1:
-                self.Positions = [am.serialize(uint64()) for _ in range(count)]
-                self.Position = self.Positions[0]
-            else:
+                self.positions = [am.serialize(uint64()) for _ in range(count)]
+                self.position = self.positions[0]
+            else:  # TODO: check if this if is necessary
                 # For single position case
-                self.Position = am.serialize(uint64())
-                self.Positions = [self.Position]
+                self.position = am.serialize(uint64())
+                self.positions = [self.position]
         else:
             if count > 1:
-                for position in self.Positions:
+                for position in self.positions:
                     am.serialize(position)
             else:
-                am.serialize(self.Position)
-        self.FilePath.serialize(am)
+                am.serialize(self.position)
+        self.file_path.serialize(am)
+
 
 class FileHeadersWrapper:
-    Files: dict[Path, FileHeader]
-    
+    files: dict[Path, FileHeader]
+
     def __init__(self) -> None:
-        self.Files = {}
-    
+        self.files = {}
+
     def add_file(self, file_header: FileHeader) -> None:
-        self.Files[file_header.FilePath] = file_header
-    
-    def get_header(self, file_path: Path) -> FileHeader | None:
-        return self.Files.get(file_path)
-    
+        self.files[file_header.file_path] = file_header
+
+    def get_header(self, file_path: Path) -> Optional[FileHeader]:
+        return self.files.get(file_path)
+
     def serialize(self, am: ArchiveMemory) -> None:
-        size = am.serialize(uint32(len(self.Files)))
-        if am.isReading():
+        size = am.serialize(uint32(len(self.files)))
+        if am.is_reading():
             for _ in range(size):
                 header = FileHeader()
                 header.serialize(am)
                 self.add_file(header)
         else:
-            for file_header in self.Files.values():
+            for file_header in self.files.values():
                 file_header.serialize(am)
-    
+
     def compute_size(self) -> uint32:
-        size = uint32(4) # count
-        for file_header in self.Files.values():
+        size = uint32(4)  # count
+        for file_header in self.files.values():
             size += file_header.compute_size()
         return size
-    
+
     def __contains__(self, file_path: Path) -> bool:
-        return file_path in self.Files
-    
+        return file_path in self.files
+
     def __len__(self) -> int:
-        return len(self.Files)
-    
+        return len(self.files)
+
     def __iter__(self) -> Iterator[Path]:
-        return iter(self.Files.keys())
+        return iter(self.files.keys())

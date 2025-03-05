@@ -1,79 +1,111 @@
 import math
+from typing import Union, SupportsFloat
+
+import numpy
+
 from .__base__ import float32
+from ..Core import serializable_class
 
-def isNaN(num: float32):
-    return num != num
 
+@serializable_class
 class Vec2d:
-    X: float32 = 0.
-    Y: float32 = 0.
-    
-    def __init__(self, _x: float32, _y: float32) -> None:
-        self.X = float32(_x)
-        self.Y = float32(_y)
+    x: float32
+    y: float32
 
-    def __str__(self):
-        return f"x: {self.X}, y: {self.Y}"
+    def __init__(self, x: SupportsFloat = 0, y: SupportsFloat = 0) -> None:
+        self.x = float32(x)
+        self.y = float32(y)
 
-    def Min(self, _v):
-        self.X = min(self.X, _v.X)
-        self.Y = min(self.Y, _v.Y)
+    def __str__(self) -> str:
+        return f"x: {self.x}, y: {self.y}"
 
-    def Max(self, _v):
-        self.X = max(self.X, _v.X)
-        self.Y = max(self.Y, _v.Y)
-    
-    def setNull(self):
-        self.X = self.Y = 0.
-    
-    def isNull(self):
-        return self.X and self.Y
-    
-    def isNaN(self):
-        return isNaN(self.X) or isNaN(self.Y)
-    
+    def __repr__(self) -> str:
+        return f"Vec2d(x={self.x}, y={self.y})"
+
+    def min(self, other: 'Vec2d') -> None:
+        if not isinstance(other, Vec2d):
+            raise TypeError("Argument must be a Vec2d")
+        self.x = numpy.min(self.x, other.x)
+        self.y = numpy.min(self.y, other.y)
+
+    def max(self, other: 'Vec2d') -> None:
+        if not isinstance(other, Vec2d):
+            raise TypeError("Argument must be a Vec2d")
+        self.x = numpy.max(self.x, other.x)
+        self.y = numpy.max(self.y, other.y)
+
+    def set_null(self) -> None:
+        self.x = self.y = float32()
+
+    def is_null(self) -> bool:
+        return self.x == 0 and self.y == 0
+
+    def is_nan(self) -> bool:
+        return math.isnan(self.x) or math.isnan(self.y)
+
     # Operators
-    def __mul__(self, _s):
-        return Vec2d(self.X * _s, self.Y * _s)
-    
-    def __imul__(self, _s):
-        self.X *= _s
-        self.Y *= _s
-    
-    def __div__(self, _s):
-        return Vec2d(self.X / _s, self.Y / _s)
-    
-    def __idiv__(self, _s):
-        self.X /= _s
-        self.Y /= _s
-    
-    def __sum__(self, _s):
-        if isinstance(_s, Vec2d):
-            return Vec2d(self.X + _s.X, self.Y + _s.Y)
-        return Vec2d(self.X + _s, self.Y + _s)
-    
-    def __isum__(self, _s):
-        if isinstance(_s, Vec2d):
-            self.X += _s.X
-            self.Y += _s.Y
+    def __mul__(self, other: Union[SupportsFloat, 'Vec2d']) -> 'Vec2d':
+        if isinstance(other, Vec2d):
+            return Vec2d(self.x * other.x, self.y * other.y)
+        return Vec2d(self.x * other, self.y * other)
+
+    def __imul__(self, other: Union[SupportsFloat, 'Vec2d']) -> 'Vec2d':
+        if isinstance(other, Vec2d):
+            self.x *= other.x
+            self.y *= other.y
         else:
-            self.X += _s
-            self.Y += _s
+            self.x *= other
+            self.y *= other
+        return self
 
-    def __sub__(self, _s):
-        if isinstance(_s, Vec2d):
-            return Vec2d(self.X - _s.X, self.Y - _s.Y)
-        return Vec2d(self.X - _s, self.Y - _s)
-    
-    def __isub__(self, _s):
-        if isinstance(_s, Vec2d):
-            self.X -= _s.X
-            self.Y -= _s.Y
-        self.X -= _s
-        self.Y -= _s
-    
-    def __eq__(self, _s) -> bool:
-        return math.isclose(self.X, _s) and math.isclose(self.Y, _s.Y)
+    def __truediv__(self, other: Union[SupportsFloat, 'Vec2d']) -> 'Vec2d':
+        if isinstance(other, Vec2d):
+            return Vec2d(self.x / other.x, self.y / other.y)
+        return Vec2d(self.x / other, self.y / other)
 
-    def __ne__(self, _s) -> bool:
-        return not (self == _s)
+    def __itruediv__(self, other: Union[SupportsFloat, 'Vec2d']) -> 'Vec2d':
+        if isinstance(other, Vec2d):
+            self.x /= other.x
+            self.y /= other.y
+        else:
+            self.x /= other
+            self.y /= other
+        return self
+
+    def __add__(self, other: Union[SupportsFloat, 'Vec2d']) -> 'Vec2d':
+        if isinstance(other, Vec2d):
+            return Vec2d(self.x + other.x, self.y + other.y)
+        return Vec2d(self.x + other, self.y + other)
+
+    def __iadd__(self, other: Union[SupportsFloat, 'Vec2d']) -> 'Vec2d':
+        if isinstance(other, Vec2d):
+            self.x += other.x
+            self.y += other.y
+        else:
+            self.x += other
+            self.y += other
+        return self
+
+    def __sub__(self, other: Union[SupportsFloat, 'Vec2d']) -> 'Vec2d':
+        if isinstance(other, Vec2d):
+            return Vec2d(self.x - other.x, self.y - other.y)
+        return Vec2d(self.x - other, self.y - other)
+
+    def __isub__(self, other: Union[SupportsFloat, 'Vec2d']) -> 'Vec2d':
+        if isinstance(other, Vec2d):
+            self.x -= other.x
+            self.y -= other.y
+        else:
+            self.x -= other
+            self.y -= other
+        return self
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Vec2d):
+            return NotImplemented
+        return math.isclose(self.x, other.x) and math.isclose(self.y, other.y)
+
+    def __ne__(self, other: object) -> bool:
+        if not isinstance(other, Vec2d):
+            return NotImplemented
+        return not (self == other)
