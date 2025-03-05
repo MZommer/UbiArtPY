@@ -15,22 +15,22 @@ I cannot provide a download link for any of this.
 
 
 ### Supported platforms:
-| Platform | Format | Implemented | 
-| :--- | :---: | ---: |
-| **PC** | PCM | ✅ |
-| **GGP (Google Stadia)** | PCM | ✅ |
-| **X360** | XMA2 | ✅ |
-| **Durango (XOne)** | XMA2 | ✅ (untested) |
-| **XBSX (Series X)** | ❓ | ❓ |
-| **PS3** | MP3 | ✅ |
-| **PSVita** | AT9 | ❌ |
-| **Orbis (PS4)** | PCM | ✅ |
-| **Prospero (PS5)** | ❓ | ❓ |
-| **PC** | PCM | ✅ |
-| **Wii** | DSP | ❌ |
-| **Cafe (WiiU)** | DSP | ❌ |
-| **Citra (3DS)** | CWAV | ❌ |
-| **NX (Nintendo Switch)** | Opus (Nintendo) | ✅ |
+| Platform                 |     Format      |  Implemented | 
+|:-------------------------|:---------------:|-------------:|
+| **PC**                   |       PCM       |            ✅ |
+| **GGP (Google Stadia)**  |       PCM       |            ✅ |
+| **X360**                 |      XMA2       |            ✅ |
+| **Durango (XOne)**       |      XMA2       | ✅ (untested) |
+| **XBSX (Series X)**      |        ❓        |            ❓ |
+| **PS3**                  |       MP3       |            ✅ |
+| **PSVita**               |       AT9       |            ❌ |
+| **Orbis (PS4)**          |       PCM       |            ✅ |
+| **Prospero (PS5)**       |        ❓        |            ❓ |
+| **PC**                   |       PCM       |            ✅ |
+| **Wii**                  |       DSP       |            ❌ |
+| **Cafe (WiiU)**          |       DSP       |            ❌ |
+| **Citra (3DS)**          |      CWAV       |            ❌ |
+| **NX (Nintendo Switch)** | Opus (Nintendo) |            ✅ |
 ### Usage
 RAKI is the format of the `cooked` audio files.
 This module provides the `RAKI` class.
@@ -69,3 +69,6 @@ from UbiArtPY import RAKI
 RAKI.UnCookAndCook("stargate.wav.ckd", "stargate_wii.wav.ckd", "WII")
 ```
 
+
+
+ADD TYPES AND WITH UNIONS PUT FIRST THE TYPE AND THEN THE DECORATORS
