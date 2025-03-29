@@ -1,23 +1,38 @@
+import warnings
+from functools import lru_cache
 from typing import Tuple, Optional, Union
 
-# from ..Core import ArchiveMemory  # circular import
+# from ..Core.SerializableClass import ArchiveMemory  # circular import
 from .String8 import String8
 from .__base__ import uint32
 
-STRIDE = uint32(1)
+# Try to import Numba, fall back to standard implementation if not available
+try:
+    from numba import njit
+except ImportError:
+    warnings.warn("[StringID] Numba not available - falling back to slower pure Python implementation")
 
 
-def uint32_cast(value: int) -> uint32:
-    return uint32(value & 0xFFFFFFFF)
+    def njit(func):
+        return func
+
+STRIDE = 1
 
 
-def to_up(char: int) -> uint32:
+@njit
+def uint32_cast(value: int) -> int:
+    return value & 0xFFFFFFFF
+
+
+@njit
+def to_up(char: int) -> int:
     if 0x61 <= char <= 0x7a:
         char -= 0x20
-    return uint32(char)
+    return char
 
 
-def mix(a: uint32, b: uint32, c: uint32) -> Tuple[uint32, uint32, uint32]:
+@njit
+def mix(a: int, b: int, c: int) -> Tuple[int, int, int]:
     a = uint32_cast((a - b - c) ^ (c >> 13))
     b = uint32_cast((b - c - a) ^ (a << 8))
     c = uint32_cast((c - a - b) ^ (b >> 13))
@@ -31,15 +46,13 @@ def mix(a: uint32, b: uint32, c: uint32) -> Tuple[uint32, uint32, uint32]:
     return a, b, c
 
 
-def str_to_crc(_stride: uint32, _string: str, _length: uint32) -> uint32:
-    if isinstance(_string, str):
-        _string = _string.encode("utf-8")
-
+@njit
+def str_to_crc(_stride: int, _string: bytes, _length: int) -> int:
     # Set up the internal state #
-    length = uint32(_length)
-    a = uint32(0x9e3779b9)  # the golden ratio; an arbitrary value
+    length = _length
+    a = 0x9e3779b9  # the golden ratio; an arbitrary value
     b = a
-    c = uint32()
+    c = 0
 
     #  handle most of the key
     while length >= 12:
@@ -78,6 +91,11 @@ def str_to_crc(_stride: uint32, _string: str, _length: uint32) -> uint32:
     return c
 
 
+@lru_cache(maxsize=1024)
+def str_to_crc_cached(_stride: int, _string: bytes, _length: int) -> int:
+    return str_to_crc(_stride, _string, _length)
+
+
 class StringID:
     InvalidId: uint32 = uint32(0xFFFFFFFF)
     FullStringTag: uint32 = uint32(0xEEEEEEEE)
@@ -93,7 +111,7 @@ class StringID:
             self.string = value.string
         elif value:
             self.string = String8(value)
-            self.id = str_to_crc(STRIDE, self.string, uint32(len(self.string)))
+            self.id = uint32(str_to_crc(STRIDE, self.string.encode("utf-8"), len(self.string)))
         else:
             self.id = self.InvalidId
 
