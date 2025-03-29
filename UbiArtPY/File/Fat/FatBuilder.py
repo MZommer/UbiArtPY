@@ -1,7 +1,8 @@
 from .FatConst import FILE_SIGNATURE, FILE_VERSION
 from .__types__ import FileSet, TOC8
-from ...Core import ArchiveMemory, Versioning
-from ...__types__ import StringID, Path, String8, uint8, uint32
+from ...Core.Archive import ArchiveMemory
+from ...Core.Versioning import Versioning
+from ...__types__ import StringID, Path, String8, uint8, uint32, PathType
 
 
 class FatBuilder:
@@ -17,7 +18,7 @@ class FatBuilder:
             self.files[path] = set()
         self.files[path].add(bundle_filename)
 
-    def save(self, filename: Path) -> bool:
+    def save(self, filename: PathType) -> bool:
         retval: bool = False
         with open(filename, 'wb') as f:
             bundle_id = uint8()
@@ -64,14 +65,14 @@ class FatBuilder:
 
                 for bundle in bundles:
                     if bundle not in bundle_toc:
+                        print(bundle_id)
                         # Assert to prevent integer overflow
                         assert bundle_id != 255, "Integer overflow"
-                        current_bundle_id: uint8 = bundle_id
+                        bundle_toc[bundle] = bundle_id
                         bundle_id += 1
-                        bundle_toc[bundle] = current_bundle_id
                     else:
                         current_bundle_id = bundle_toc[bundle]
-                    bundle_ids.append(current_bundle_id)
+                        bundle_ids.append(current_bundle_id)
 
                 size = uint32(len(bundle_ids))
                 am.serialize(size)

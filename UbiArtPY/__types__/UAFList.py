@@ -1,4 +1,3 @@
-from functools import singledispatchmethod
 from typing import Callable
 from typing import TypeVar, Generic, Iterable, Optional, Any
 
@@ -8,24 +7,47 @@ T = TypeVar('T')
 
 
 class UAFList(UAFCollection[T], Generic[T]):
-    @singledispatchmethod
-    def __init__(self, values: Iterable[T]):
+    def __init__(self, *args):
+        """
+       Initialize a UAFList instance.
+
+       The constructor supports the following initialization patterns:
+       1. Initialize with an iterable of values:
+          Example: UAFList([1, 2, 3])
+       2. Initialize with an element type:
+          Example: UAFList(int)
+       3. Initialize with a UAFCollection:
+          Example: UAFList(another_uaf_collection)
+
+       Args:
+           *args: Variable-length argument list. Valid inputs are:
+               - A single iterable of values (Iterable[T]).
+               - A single type (type) to set the element_type.
+               - A single UAFCollection to copy elements and element_type.
+
+       Raises:
+           AttributeError: If no arguments are provided.
+           TypeError: If the arguments are invalid or unsupported.
+       """
         super().__init__()
-        if isinstance(values, UAFCollection):
-            self.SerializableElements = values.SerializableElements
-            self.element_type = values.element_type
+        if len(args) == 1:
+            # Case 1: Single argument (Iterable[T] or UAFCollection)
+            values = args[0]
+            if isinstance(values, type):
+                # Case 2: Single argument (element_type as a type)
+                self.element_type = args[0]
+            elif isinstance(values, UAFCollection):
+                self.SerializableElements = values.SerializableElements
+                self.element_type = values.element_type
+            else:
+                for value in values:
+                    self.add(value)
+        elif len(args) == 0:
+            # Case 3: No arguments (raise error)
+            raise AttributeError("UAFList must be initialized with a type or a list of values")
         else:
-            for value in values:
-                self.add(value)
-
-    @__init__.register
-    def _(self):
-        raise AttributeError("UAFList must be initialized with a type or a list of values")
-
-    @__init__.register
-    def _(self, element_type: type):
-        super().__init__()
-        self.element_type = element_type
+            # Case 4: Invalid arguments
+            raise TypeError("Invalid arguments for UAFList initialization")
 
     def __str__(self) -> str:
         return f'{self.count} {self.element_type}{"s" if self.count > 1 else ""}'

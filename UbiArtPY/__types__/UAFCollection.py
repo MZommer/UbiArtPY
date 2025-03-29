@@ -8,8 +8,10 @@ class UAFCollection(Generic[T], Iterable[T], abc.ABC):
     element_type: type
     SerializableElements: List[T]
 
-    def __init__(self):
+    def __init__(self, dtype: type = None):
         self.SerializableElements = []
+        if dtype:
+            self.element_type = dtype
 
     def clear(self):
         self.SerializableElements.clear()

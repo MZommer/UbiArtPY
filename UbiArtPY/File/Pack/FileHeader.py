@@ -1,6 +1,7 @@
 from typing import Iterator, Optional
 
-from ...Core import ArchiveMemory, serializable_class
+from ...Core.Archive import ArchiveMemory
+from ...Core.SerializableClass import serializable_class
 from ...__types__ import uint32, uint64, Path
 
 

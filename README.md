@@ -45,7 +45,7 @@ This module provides the `RAKI` class.
 `RAKI.UnCookAndCook(file: path, output: path, platform: str)` Reformat a RAKI file into another platform/format
 
 `RAKI.SyncJDUAudio(file: path, output: path, startBeat: int, markers: list[int], amboutput: path=None)`
-Syncronizes a JDU audio into a local one
+Synchronizes a JDU audio into a local one
 
 
 

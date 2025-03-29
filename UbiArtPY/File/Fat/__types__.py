@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from ... import serializable_class
+from ...Core.SerializableClass import serializable_class
 from ...__types__ import StringID, Path, String8, uint8, uint16
 
 

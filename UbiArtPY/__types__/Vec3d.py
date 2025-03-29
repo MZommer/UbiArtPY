@@ -4,7 +4,7 @@ from typing import Union, SupportsFloat
 import numpy
 
 from .__base__ import float32
-from ..Core import serializable_class
+from ..Core.SerializableClass import serializable_class
 
 
 @serializable_class

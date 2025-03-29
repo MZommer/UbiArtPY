@@ -49,4 +49,4 @@ def override_timestamps(file_path: os.PathLike, creation_time: int, last_modifie
         os.utime(file_path, (creation_time_unix, last_modified_time_unix))
 
     except (OSError, ValueError) as e:
-        raise Exception(f"Failed to set timestamps for {file_path}: {str(e)}")
+        raise OSError(f"Failed to set timestamps for {file_path}: {e}")

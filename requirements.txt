@@ -1,2 +1,7 @@
 zlib
 lzma
+BinaryHelper~=1
+UbiArtPY~=2
+future~=1.0.0
+setuptools~=70.2.0
+numpy~=2.1.3

@@ -1,4 +1,4 @@
-from enum import IntEnum
+from enum import Enum
 from typing import Tuple, Iterable, Optional
 
 from .JdVersion import (
@@ -11,7 +11,7 @@ from .StringID import StringID
 from .__base__ import uint32
 
 
-class PlatformId(IntEnum):
+class PlatformId(int, Enum):
     PC = uint32(0)
     X360 = uint32(1)
     PS3 = uint32(2)

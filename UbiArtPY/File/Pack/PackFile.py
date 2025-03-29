@@ -6,8 +6,8 @@ from .BundleHeader import BundleHeader
 from .FileHeader import FileHeader, FileHeadersWrapper
 from ..Compress import Compress
 from ..FileHelpers import get_windows_file_timestamps, override_timestamps
-from ...Core import ArchiveMemory
-from ...__types__ import uint32, uint64, Path, Platform, Platforms
+from ...Core.Archive import ArchiveMemory
+from ...__types__ import uint32, uint64, Path, Platform, Platforms, PathType
 
 FILES_TO_COMPRESS = ".s3d.ckd", ".a3d.ckd", ".m3d.ckd", ".tga.ckd", ".png.ckd", ".anm.ckd", ".fx.fxb", ".dtape.ckd"
 CHUNK_LENGTH = 1024 * 1024
@@ -30,7 +30,7 @@ class PackFile:  # IPK (ITF Pack)
 
     # create zip library like way to compress/decompress
     def __init__(self,
-                 path: Path,
+                 path: PathType,
                  mode: str,
                  platform: Platform = Platforms.INVALID,
                  binary: bool = False,
@@ -124,7 +124,7 @@ class PackFile:  # IPK (ITF Pack)
             try:
                 self.extract(folder, file, overwrite)
             except Exception as e:
-                raise Exception(f"Error while extracting in pos {self._archive.get_seek_pos()}", e)
+                raise BufferError(f"Error while extracting in pos {self._archive.get_seek_pos()}", e)
 
     # Write methods
     def register_file(self, file: Path, itf_path: Path, force_compress: bool = False):
@@ -206,8 +206,11 @@ class PackFile:  # IPK (ITF Pack)
 
         self._archive.close()
 
+    def close(self):
+        self._archive.close()
+
     def __exit__(self, exc_type, exc_val, exc_tb):
-        pass
+        self.close()
 
     def __enter__(self):
         return self

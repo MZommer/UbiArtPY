@@ -2,7 +2,7 @@ from typing import List
 
 from .FatConst import FILE_SIGNATURE, FILE_VERSION, IndexToBundleIdsArray_Mask
 from .__types__ import BundleTOC, BundleIds, FileLink, FileLinks
-from ...Core import ArchiveMemory
+from ...Core.Archive import ArchiveMemory
 from ...__types__ import StringID, Path, String8, uint8, uint32
 
 

@@ -172,7 +172,7 @@ class PackUnpackApp:
         platform = next((p for p in PLATFORMS if p.name == platform_name), None)
 
         if platform:
-            available_versions = platform.AvailableVersions
+            available_versions = platform.available_versions
             self.jd_version_menu["values"] = [v.name for v in available_versions]
             if available_versions:
                 self.jd_version_var.set(available_versions[0].name)

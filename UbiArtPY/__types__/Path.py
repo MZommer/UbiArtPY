@@ -7,11 +7,13 @@ from typing import Union
 from .String8 import String8
 from .StringID import StringID
 from .__base__ import uint32
-# from ..Core import ArchiveMemory
-from ..Core import Versioning
+
+# from ..Core.SerializableClass import ArchiveMemory
 
 PATH_C_BUFFER_SIZE: uint32 = uint32(256)
 MaxBasenameLength: uint32 = uint32(64 + 1)  # Size, in characters, of the basename. Includes the null character.
+
+PathType = Union[PathLike, str, String8, 'Path']
 
 
 class Path(PathLike):
@@ -27,7 +29,7 @@ class Path(PathLike):
         """
         return cls(String8())
 
-    def __init__(self, *args: Union[String8, Path]):
+    def __init__(self, *args: PathType):
         """
         Initializes a Path object.
 
@@ -148,6 +150,7 @@ class Path(PathLike):
         Returns:
             bool: True if serialization was successful, False otherwise.
         """
+        from ..Core.Versioning import Versioning  # avoid circular import
         try:
             legacy = Versioning.Engine <= 109470 or legacy  # JD5 EngineVer (legacy path) TODO: take from Versioning
             basename = self.get_basename()

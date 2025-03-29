@@ -1,7 +1,10 @@
-from ...Core import ArchiveMemory, Versioning, serializable_class
+from ...Core.Archive import ArchiveMemory
+from ...Core.SerializableClass import serializable_class
+from ...Core.Versioning import Versioning
 from ...__types__ import uint32, Platform, Platforms
 
 PACK_MAGIC_NUMBER = uint32(0x50EC12BA)
+uint32(1357648570)
 
 
 @serializable_class

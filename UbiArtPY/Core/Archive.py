@@ -1,17 +1,41 @@
 import struct
+from enum import Enum
 from io import BytesIO
 from typing import Optional, Union, Any, BinaryIO
 
-from BinaryHelper import get_type_format, get_sizeof, Endianess
+import numpy as np
 
 from ..__types__ import (
-    Path,
+    Path, bbool,
     int8, uint8, int16, uint16, uint32, int32,
-    uint64, int64, float32, float64,
+    uint64, int64, float16, float32, float64,
 )
 
 
-def archive_roundup(x: int, a: int) -> int:
+class Endianess(str, Enum):
+    BIG = "BIG"
+    LITTLE = "LITTLE"
+
+
+type_format_table = {
+    int8: "b", uint8: "B",  # byte
+    int16: "h", uint16: "H",  # short
+    int32: "i", uint32: "I",  # int
+    int64: "q", uint64: "Q",  # long long
+    float16: "e",  # half
+    float32: "f",  # float
+    float64: "d",  # double
+    bool: "?", bbool: "?",  # bool
+    Endianess.LITTLE: "<", Endianess.BIG: ">",
+}
+
+
+def get_type_format(datatype: Union[np.dtype, Endianess], default: str = "x") -> str:
+    """dtype to struct format char"""
+    return type_format_table.get(datatype, default)
+
+
+def archive_roundup(x: uint32, a: uint32) -> int:
     return (x + (a - 1)) & (~(a - 1))
 
 
@@ -173,7 +197,7 @@ class ArchiveMemory:
         if _dtype is bool:
             _dtype = uint32
             ptr = uint32(ptr)
-        size = get_sizeof(ptr)
+        size = ptr.get_sizeof()
         bytes_format = get_type_format(self.byte_order) + get_type_format(_dtype)
         buffer = struct.pack(bytes_format, ptr)
         buffer = self.serialize_internal_buffer(buffer, size)
