@@ -70,7 +70,6 @@ class FatBase:
 
     @property
     def bundles(self):
-        print(self.bundle_toc)
         return iter(self.bundle_toc.values())
 
     def load(self, filename: Path, engine_signature: uint32 = 0, verify_engine_signature: bool = False) -> bool:
@@ -137,7 +136,6 @@ class FatBase:
                         bundle_id = am.serialize(bundle_id)
                         bundle_name = String8()
                         bundle_name.serialize(am)
-                        print(bundle_id, bundle_name)
                         self.bundle_toc[uint8(bundle_id + bundle_offset)] = bundle_name
                     return True
                 # treat old versions if needed
