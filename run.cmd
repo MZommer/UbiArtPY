@@ -1,1 +1,0 @@
-py setup.py install

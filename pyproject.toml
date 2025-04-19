@@ -1,0 +1,21 @@
+[project]
+name = "ubiartpy"
+version = "1.0.0"
+description = "Python Module for UbiArt Framework"
+authors = [
+    { name = "Matias Zommer", email = "matiaszommer@gmail.com" }
+]
+readme = "README.md"
+repository = "https://github.com/MZommer/UbiArtPY"
+packages = [{ include = "UbiArtPY" }]
+requires-python = ">=3.10"
+dependencies = [
+    "numpy (>=2.2.4,<3.0.0)"
+]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
