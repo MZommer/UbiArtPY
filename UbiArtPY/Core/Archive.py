@@ -1,12 +1,15 @@
+from __future__ import annotations
+
 import struct
 from enum import Enum
 from io import BytesIO
+from os import PathLike
 from typing import Optional, Union, Any, BinaryIO
 
 import numpy as np
 
 from ..__types__ import (
-    Path, bbool,
+    bbool,
     int8, uint8, int16, uint16, uint32, int32,
     uint64, int64, float16, float32, float64,
 )
@@ -35,8 +38,8 @@ def get_type_format(datatype: Union[np.dtype, Endianess], default: str = "x") ->
     return type_format_table.get(datatype, default)
 
 
-def archive_roundup(x: uint32, a: uint32) -> int:
-    return (x + (a - 1)) & (~(a - 1))
+def archive_roundup(x: uint32, a: uint32) -> uint32:
+    return uint32((x + (a - 1)) & (~(a - 1)))
 
 
 class ArchiveMemory:
@@ -44,7 +47,7 @@ class ArchiveMemory:
     seek_pos: uint32
     capacity: uint32
     size: uint32
-    linker: "ArchiveLinker"
+    linker: ArchiveLinker = None  # Not implemented.
     _is_reading: bool
     byte_order: Endianess
     strict: bool
@@ -63,12 +66,11 @@ class ArchiveMemory:
         self.capacity = uint32()
         self.size = uint32()
         # Using uint since all the platforms work with fat32, add warning if reached since limit is 4gb.
-        self.linker = None  # Not implemented.
         self._is_reading = is_reading
         self.byte_order = byteorder
         self.strict = strict
         if buffer:
-            self.init(len(buffer), size, True)
+            self.init(uint32(len(buffer)), size, True)
             self.data = BytesIO(bytearray(buffer))
         elif reserve > 0:
             self.init(reserve, size, is_reading)
@@ -76,7 +78,7 @@ class ArchiveMemory:
     def init(self, reserve: uint32, size: uint32, is_reading: bool):
         self.reserve(reserve)
         self.size = uint32(size)
-        self._is_reading = uint32(is_reading)
+        self._is_reading = is_reading
 
     def close(self):
         self.data.close()
@@ -91,7 +93,7 @@ class ArchiveMemory:
         self.close()
 
     @staticmethod
-    def read_from_path(path: Path, byteorder: Endianess = Endianess.BIG) -> "ArchiveMemory":
+    def read_from_path(path: PathLike, byteorder: Endianess = Endianess.BIG) -> ArchiveMemory:
         f = open(path, 'rb')
         length = uint32(f.seek(0, 2))
         f.seek(0)
@@ -101,9 +103,9 @@ class ArchiveMemory:
         return am
 
     @staticmethod
-    def write_from_path(path: Path, byteorder: Endianess = Endianess.BIG) -> "ArchiveMemory":
+    def write_from_path(path: PathLike, byteorder: Endianess = Endianess.BIG) -> ArchiveMemory:
         f = open(path, 'wb')
-        am = ArchiveMemory(False, 0, byteorder=byteorder)
+        am = ArchiveMemory(False, uint32(), byteorder=byteorder)
         am.data = f
         am.rewind_for_writing()
         return am
