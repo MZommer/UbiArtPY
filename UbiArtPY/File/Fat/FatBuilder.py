@@ -1,8 +1,10 @@
+from os import PathLike
+
 from .FatConst import FILE_SIGNATURE, FILE_VERSION
 from .__types__ import FileSet, TOC8
 from ...Core.Archive import ArchiveMemory
 from ...Core.Versioning import Versioning
-from ...__types__ import StringID, Path, String8, uint8, uint32, PathType
+from ...__types__ import StringID, Path, String8, uint8, uint32
 
 
 class FatBuilder:
@@ -18,7 +20,7 @@ class FatBuilder:
             self.files[path] = set()
         self.files[path].add(bundle_filename)
 
-    def save(self, filename: PathType) -> bool:
+    def save(self, filename: PathLike) -> bool:
         retval: bool = False
         with open(filename, 'wb') as f:
             bundle_id = uint8()
