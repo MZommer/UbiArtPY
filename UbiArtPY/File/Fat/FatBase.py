@@ -135,7 +135,7 @@ class FatBase:
                         bundle_id = uint8()
                         bundle_id = am.serialize(bundle_id)
                         bundle_name = String8()
-                        bundle_name.serialize(am)
+                        bundle_name = bundle_name.serialize(am)
                         self.bundle_toc[uint8(bundle_id + bundle_offset)] = bundle_name
                     return True
                 # treat old versions if needed

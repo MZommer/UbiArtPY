@@ -160,13 +160,13 @@ class Path(PathLike):
             )
 
             if not legacy:
-                basename.serialize(_archive)
+                basename = basename.serialize(_archive)
 
             directory = self.get_directory()
-            directory.serialize(_archive)
+            directory = directory.serialize(_archive)
 
             if legacy:
-                basename.serialize(_archive)
+                basename = basename.serialize(_archive)
 
             if _archive.is_reading():
                 assert (
@@ -220,7 +220,7 @@ class Path(PathLike):
         Returns:
             String8: The directory of the path.
         """
-        return String8(self._path.parent.as_posix())
+        return String8(self._path.parent.as_posix() + "/")
 
     def set_directory(self, directory: String8):
         """
@@ -403,3 +403,6 @@ class Path(PathLike):
             _other_path: The Path to append.
         """
         self._path = self._path / _other_path._path
+
+    def is_file(self):
+        self._path.is_file()
