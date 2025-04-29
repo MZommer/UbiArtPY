@@ -159,7 +159,7 @@ class ArchiveMemory:
     def get_info(self) -> tuple[uint32, uint32]:
         return self.get_size(), self.get_seek_pos()
 
-    def seek(self, pos: int):
+    def seek(self, pos: uint32):
         self.data.seek(pos)
         self.seek_pos = uint32(pos)
 
