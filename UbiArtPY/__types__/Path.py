@@ -13,8 +13,6 @@ from .__base__ import uint32
 PATH_C_BUFFER_SIZE: uint32 = uint32(256)
 MaxBasenameLength: uint32 = uint32(64 + 1)  # Size, in characters, of the basename. Includes the null character.
 
-PathType = Union[PathLike, str, String8, 'Path']
-
 
 class Path(PathLike):
     """A class representing a filesystem path with additional functionality for serialization and manipulation."""
@@ -23,13 +21,13 @@ class Path(PathLike):
     _flags: uint32
 
     @classmethod
-    def empty_path(cls) -> 'Path':
+    def empty_path(cls) -> Path:
         """
         Returns an empty Path object.
         """
         return cls(String8())
 
-    def __init__(self, *args: PathType):
+    def __init__(self, *args: Union[PathLike, str, String8, Path]):
         """
         Initializes a Path object.
 
@@ -55,7 +53,7 @@ class Path(PathLike):
         """Returns the hash of the path based on its StringID."""
         return int(self.get_string_id().get_hash_code())
 
-    def __eq__(self, other: Union['Path', str, StringID]) -> bool:
+    def __eq__(self, other: Union[Path, str, StringID]) -> bool:
         """
         Checks if this Path is equal to another Path, string, or StringID.
 
@@ -70,7 +68,7 @@ class Path(PathLike):
             return self.get_string_id() == other
         return False
 
-    def __ne__(self, other: Union['Path', str, StringID]) -> bool:
+    def __ne__(self, other: Union[Path, str, StringID]) -> bool:
         """
         Checks if this Path is not equal to another Path, string, or StringID.
 
@@ -82,7 +80,7 @@ class Path(PathLike):
         """
         return not self.__eq__(other)
 
-    def __lt__(self, other: Union['Path', str]) -> bool:
+    def __lt__(self, other: Union[Path, str]) -> bool:
         """
         Checks if this Path is less than another Path or string.
 
@@ -94,7 +92,7 @@ class Path(PathLike):
         """
         return str(self) < str(other)
 
-    def __gt__(self, other: Union['Path', str]) -> bool:
+    def __gt__(self, other: Union[Path, str]) -> bool:
         """
         Checks if this Path is greater than another Path or string.
 
@@ -106,7 +104,7 @@ class Path(PathLike):
         """
         return str(self) > str(other)
 
-    def __le__(self, other: Union['Path', str]) -> bool:
+    def __le__(self, other: Union[Path, str]) -> bool:
         """
         Checks if this Path is less than or equal to another Path or string.
 
@@ -118,7 +116,7 @@ class Path(PathLike):
         """
         return str(self) <= str(other)
 
-    def __ge__(self, other: Union['Path', str]) -> bool:
+    def __ge__(self, other: Union[Path, str]) -> bool:
         """
         Checks if this Path is greater than or equal to another Path or string.
 
@@ -308,7 +306,7 @@ class Path(PathLike):
         """
         self._path = PathlibPath(new_directory) / self._path.name
 
-    def copy_and_change_directory(self, new_directory: String8) -> 'Path':
+    def copy_and_change_directory(self, new_directory: String8) -> Path:
         """
         Returns a new Path object with the directory changed.
 
@@ -329,7 +327,7 @@ class Path(PathLike):
         """
         self._path = self._path.with_name(basename)
 
-    def copy_and_change_basename(self, new_basename: String8) -> 'Path':
+    def copy_and_change_basename(self, new_basename: String8) -> Path:
         """
         Returns a new Path object with the basename changed.
 
@@ -350,7 +348,7 @@ class Path(PathLike):
         """
         self._path = self._path.with_suffix(extension)
 
-    def copy_and_change_extension(self, new_extension: String8) -> 'Path':
+    def copy_and_change_extension(self, new_extension: String8) -> Path:
         """
         Returns a new Path object with the extension changed.
 
@@ -362,7 +360,7 @@ class Path(PathLike):
         """
         return Path(String8(self._path.with_suffix(new_extension)))
 
-    def copy_and_append(self, _suffix: Union[String8, 'Path']) -> 'Path':
+    def copy_and_append(self, _suffix: Union[String8, Path]) -> Path:
         """
         Returns a new Path object with the suffix appended.
 
@@ -374,7 +372,7 @@ class Path(PathLike):
         """
         return Path(String8(self._path / _suffix))
 
-    def copy_and_append_path(self, _other_path: 'Path') -> 'Path':
+    def copy_and_append_path(self, _other_path: Path) -> Path:
         """
         Returns a new Path object with another Path appended.
 
@@ -386,23 +384,5 @@ class Path(PathLike):
         """
         return Path(String8(self._path / _other_path._path))
 
-    def append(self, _suffix: String8):
-        """
-        Appends a suffix to the path.
-
-        Args:
-            _suffix: The suffix to append as a String8 object.
-        """
-        self._path = self._path / _suffix
-
-    def append_path(self, _other_path: 'Path'):
-        """
-        Appends another Path to this Path.
-
-        Args:
-            _other_path: The Path to append.
-        """
-        self._path = self._path / _other_path._path
-
-    def is_file(self):
-        self._path.is_file()
+    def is_file(self) -> bool:
+        return self._path.is_file()
