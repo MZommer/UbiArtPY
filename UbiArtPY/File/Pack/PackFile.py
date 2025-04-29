@@ -1,5 +1,6 @@
 import os.path
 from dataclasses import dataclass
+from os import PathLike
 from typing import BinaryIO
 
 from .BundleHeader import BundleHeader
@@ -7,7 +8,7 @@ from .FileHeader import FileHeader, FileHeadersWrapper
 from ..Compress import Compress
 from ..FileHelpers import get_windows_file_timestamps, override_timestamps
 from ...Core.Archive import ArchiveMemory
-from ...__types__ import uint32, uint64, Path, Platform, Platforms, PathType
+from ...__types__ import uint32, uint64, Path, Platform, Platforms
 
 FILES_TO_COMPRESS = ".s3d.ckd", ".a3d.ckd", ".m3d.ckd", ".tga.ckd", ".png.ckd", ".anm.ckd", ".fx.fxb", ".dtape.ckd"
 CHUNK_LENGTH = 1024 * 1024
@@ -30,7 +31,7 @@ class PackFile:  # IPK (ITF Pack)
 
     # create zip library like way to compress/decompress
     def __init__(self,
-                 path: PathType,
+                 path: PathLike,
                  mode: str,
                  platform: Platform = Platforms.INVALID,
                  binary: bool = False,
