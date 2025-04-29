@@ -13,7 +13,7 @@ def serializable_class(cls):
                     casted_value = expected_type(value)
                     setattr(self, f'_{name}', casted_value)
                 except (ValueError, TypeError) as e:
-                    raise TypeError(f"Cannot cast value to {expected_type.__name__}: {str(e)}")
+                    raise TypeError(f"Cannot cast value to {expected_type.__name__}: {e}")
 
             return setter
 
