@@ -7,7 +7,7 @@ from .ColorInteger import ColorInteger
 from .LocalisationId import LocalisationId
 from .LocalizedPath import LocalizedPath
 from .ObjectPath import ObjectPath, Level
-from .Path import Path, PathType
+from .Path import Path
 from .Platform import Platform, PlatformId, PLATFORMS
 from .SafeStringID import SafeStringID
 from .String8 import String8
