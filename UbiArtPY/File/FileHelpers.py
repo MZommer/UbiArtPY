@@ -1,5 +1,6 @@
 import os
 from datetime import datetime, timezone
+from typing import Union
 
 from ..__types__ import uint64
 
@@ -14,11 +15,18 @@ def to_windows_timestamp(dt: datetime) -> uint64:
     return uint64(delta.total_seconds() * HUNDRED_NS_MULTIPLIER)
 
 
+def from_timestamp(timestamp: Union[int, float]) -> datetime:
+    try:
+        return datetime.fromtimestamp(timestamp, tz=timezone.utc)
+    except (OSError, AttributeError) as e:
+        return datetime(1970, 1, 1, tzinfo=timezone.utc) if timestamp <= 0 else datetime.now(timezone.utc)
+
+
 def get_windows_file_timestamps(file_path: os.PathLike) -> tuple[uint64, uint64, uint64]:
-    stats = os.stat(str(file_path))
-    creation_time = datetime.fromtimestamp(stats.st_birthtime, tz=timezone.utc)
-    last_access_time = datetime.fromtimestamp(stats.st_atime, tz=timezone.utc)
-    last_modified_time = datetime.fromtimestamp(stats.st_mtime, tz=timezone.utc)
+    stats = os.stat(file_path)
+    creation_time = from_timestamp(stats.st_ctime)
+    last_access_time = from_timestamp(stats.st_atime)
+    last_modified_time = from_timestamp(stats.st_mtime)
 
     creation_time_win = to_windows_timestamp(creation_time)
     last_modified_time_win = to_windows_timestamp(last_modified_time)
