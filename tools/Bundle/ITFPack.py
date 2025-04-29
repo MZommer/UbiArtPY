@@ -24,11 +24,11 @@ def pack_folder(source: Path, destination: Path, platform: Platform, jd_version:
         packer.save()
 
 
-def unpack_bundle(source: Path, destination: Path):
+def unpack_bundle(source: Path, destination: Path, overwrite: bool = True):
     """Unpacks a bundle into a folder."""
     destination = Path(destination)
     with PackFile(source, "r") as unpacker:
-        unpacker.extract_all(destination)
+        unpacker.extract_all(destination, overwrite)
         return unpacker.header
 
 
@@ -112,7 +112,12 @@ class PackUnpackApp:
         self.unpack_destination_entry.grid(row=1, column=1, pady=10, padx=10)
         ttk.Button(self.unpack_tab, text="Browse", command=self.browse_unpack_destination).grid(row=1, column=2,
                                                                                                 pady=10, padx=10)
-
+        self.unpack_overwrite_var = tk.BooleanVar(value=True)
+        self.unpack_overwrite_check = ttk.Checkbutton(
+            self.unpack_tab, text="Overwrite existing files",
+            variable=self.unpack_overwrite_var
+        )
+        self.unpack_overwrite_check.grid(row=2, column=0, columnspan=3, pady=5, sticky="w")
         ttk.Button(self.unpack_tab, text="Unpack Bundle", command=self.unpack_bundle_thread).grid(row=2, column=0,
                                                                                                   columnspan=3, pady=20)
 
@@ -249,6 +254,7 @@ class PackUnpackApp:
         """Unpacks the selected bundle into a folder."""
         source = self.unpack_file_entry.get()
         destination = self.unpack_destination_entry.get()
+        overwrite = self.unpack_overwrite_var.get()
 
         if not os.path.isfile(source):
             messagebox.showerror("Error", "Please select a valid bundle file to unpack.")
@@ -261,7 +267,7 @@ class PackUnpackApp:
         try:
             with PackFile(source, "r") as unpacker:
                 self.update_engine_info()
-                unpacker.extract_all(destination)
+                unpacker.extract_all(destination, overwrite)
                 messagebox.showinfo("Success", f"Bundle unpacked successfully to {destination}")
         except Exception as e:
             messagebox.showerror("Error", f"Failed to unpack bundle: {e}")
