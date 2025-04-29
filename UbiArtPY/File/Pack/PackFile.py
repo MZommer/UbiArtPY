@@ -190,7 +190,7 @@ class PackFile:  # IPK (ITF Pack)
                 size = uint32(f.tell())
                 header.original_size = uint32(size)
                 # TODO: Add file replication for discs
-                header.position = uint64(self._archive.get_seek_pos())
+                header.position = uint64(self._archive.get_seek_pos() - self.header.files_start)
                 header.positions = [header.position]
 
                 if rfile.compress:
