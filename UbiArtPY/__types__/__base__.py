@@ -270,6 +270,7 @@ class BaseType(abc.ABC):
 
 
 class BaseInt(
+    int,
     BaseType,
     SupportsInt,
     SupportsAbs,
@@ -445,6 +446,7 @@ class BaseInt(
 
 
 class BaseFloat(
+    float,
     BaseType,
     SupportsFloat,
     SupportsAbs,
@@ -706,7 +708,7 @@ class float64(BaseFloat):
 
 
 # Boolean type
-class bbool(BaseType):
+class bbool(bool, BaseType):
     """
     Boolean type.
 
@@ -714,7 +716,7 @@ class bbool(BaseType):
     """
 
     def __init__(self, value=False):
-        self._value = bool(value)
+        super().__init__(value)
 
     @classmethod
     def _dtype(cls) -> np.dtype:
