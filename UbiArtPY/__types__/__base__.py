@@ -353,6 +353,7 @@ class BaseInt(
     def __invert__(self):
         return self.__class__(~self._value)
 
+    # Operators
     def __mul__(self, other):
         if isinstance(other, BaseType):
             return self.__class__(self._value * other._value)
@@ -368,6 +369,105 @@ class BaseInt(
 
     def __imul__(self, other):
         self._value = self * other
+        return self
+
+    def __add__(self, other):
+        if isinstance(other, BaseType):
+            return self.__class__(self._value + other._value)
+        if isinstance(other, float):
+            return other.__class__(self._value + other)
+        if isinstance(other, int):
+            return self.__class__(self._value + other)
+
+        return self._value + other
+
+    def __radd__(self, other):
+        return self + other
+
+    def __iadd__(self, other):
+        self._value = self + other
+        return self
+
+    def __sub__(self, other):
+        if isinstance(other, BaseType):
+            return self.__class__(self._value - other._value)
+        if isinstance(other, float):
+            return other.__class__(self._value - other)
+        if isinstance(other, int):
+            return self.__class__(self._value - other)
+
+        return self._value - other
+
+    def __rsub__(self, other):
+        return self - other
+
+    def __isub__(self, other):
+        self._value = self - other
+        return self
+
+    def __truediv__(self, other):
+        if isinstance(other, BaseType):
+            return self.__class__(self._value / other._value)
+        if isinstance(other, float):
+            return other.__class__(self._value / other)
+        if isinstance(other, int):
+            return self.__class__(self._value / other)
+
+        return self._value / other
+
+    def __rtruediv__(self, other):
+        return self / other
+
+    def __itruediv__(self, other):
+        self._value = self / other
+        return self
+
+    def __floordiv__(self, other):
+        if isinstance(other, BaseType):
+            return self.__class__(self._value // other._value)
+        if isinstance(other, float):
+            return other.__class__(self._value // other)
+        if isinstance(other, int):
+            return self.__class__(self._value // other)
+        return self._value // other
+
+    def __rfloordiv__(self, other):
+        return self // other
+
+    def __ifloordiv__(self, other):
+        self._value = self // other
+        return self
+
+    def __mod__(self, other):
+        if isinstance(other, BaseType):
+            return self.__class__(self._value % other._value)
+        if isinstance(other, float):
+            return other.__class__(self._value % other)
+        if isinstance(other, int):
+            return self.__class__(self._value % other)
+        return self._value % other
+
+    def __rmod__(self, other):
+        return self % other
+
+    def __imod__(self, other):
+        self._value = self % other
+        return self
+
+    def __pow__(self, other):
+        if isinstance(other, BaseType):
+            return self.__class__(self._value ** other._value)
+        if isinstance(other, float):
+            return other.__class__(self._value ** other)
+        if isinstance(other, int):
+            return self.__class__(self._value ** other)
+        return self._value ** other
+
+    def __rpow__(self, other):
+        return self ** other
+
+    def __ipow__(self, other):
+        self._value = self ** other
         return self
 
     @classmethod
@@ -708,7 +808,7 @@ class float64(BaseFloat):
 
 
 # Boolean type
-class bbool(bool, BaseType):
+class bbool(BaseType):
     """
     Boolean type.
 
