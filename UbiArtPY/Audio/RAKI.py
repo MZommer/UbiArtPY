@@ -131,7 +131,7 @@ class RAKI:
         self.dataOffset = 0x58
         self.nbItems = 3
         self.__CookRAKIHeader(raki)
-        wave = RIFF.from_file("/temp/temp.wav")
+        wave = RIFF.from_file("./temp/temp.wav")
         system('OpusEncoder --bitrate 192000  -o \\temp\\temp.lopus \\temp\\temp.wav')
         with open("\\temp\\temp.lopus", "rb") as opus:
             data = opus.read()
@@ -161,7 +161,7 @@ class RAKI:
 
         raki.write(data)
 
-        os.remove("/temp/temp.lopus")
+        os.remove("./temp/temp.lopus")
 
     def __CookPCM(self, raki):
         self.nonDataSize = 72
@@ -169,7 +169,7 @@ class RAKI:
         self.nbItems = 2
         # Hard codded
         self.__CookRAKIHeader(raki)
-        wave = RIFF.from_file("/temp/temp.wav")
+        wave = RIFF.from_file("./temp/temp.wav")
         raki.write(b'fmt ')
         raki.write(struct.pack("I", 56))  # Chunk Offset
         raki.write(struct.pack("I", 16))  # Chunk Length
@@ -194,7 +194,7 @@ class RAKI:
         self.nbItems = 2
         # Hard codded
         self.__CookRAKIHeader(raki)
-        wave = RIFF.from_file("/temp/temp.wav")
+        wave = RIFF.from_file("./temp/temp.wav")
         system('ffmpeg -i \\temp\\temp.wav -write_xing 0 -id3v2_version 0 -b:a 192k -ac 2 -ar 48000 \\temp\\temp.mp3')
         with open("\\temp\\temp.mp3", "rb") as mp3:
             data = mp3.read()
@@ -218,11 +218,11 @@ class RAKI:
 
         raki.write(data)
 
-        os.remove("/temp/temp.mp3")
+        os.remove("./temp/temp.mp3")
 
     def __CookXMA2(self, raki):
         system(r'xma2encode \temp\temp.wav /BlockSize 4 /Quality 92 /TargetFile \temp\temp.xma')
-        xma2 = RIFF.from_file("/temp/temp.xma")
+        xma2 = RIFF.from_file("./temp/temp.xma")
 
         dataOffset = 120 + xma2.seekTableLength
         dataOffsetSpaced = ceil(dataOffset / 2048) * 2048
@@ -267,7 +267,7 @@ class RAKI:
         raki.write(b"\x00" * spacing)
         raki.write(xma2.Data)
 
-        os.remove("/temp/temp.xma")
+        os.remove("./temp/temp.xma")
 
     def __CookDSP(self, raki):
         # TODO: finish? missing the writing data
@@ -364,7 +364,7 @@ class RAKI:
                 self.__CookDSP(raki)  # Format is "adpc" cause the dsp data is in adpcm
             elif self.Format == b"msadpcm":
                 self.__CookMSADPCM(raki)
-        os.remove("/temp/temp.wav")
+        os.remove("./temp/temp.wav")
 
     @staticmethod
     def Parse(path):
